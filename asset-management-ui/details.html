@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header detail-header">
+            <div class="header-left">
+                <a href="index.html" class="icon-btn dark"><i class="ph ph-arrow-left"></i></a>
+                <div class="logo-branding" style="margin-left: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+                    <img src="assets/logo_daewoo.png" alt="Daewoo E&C Vina" class="logo-img">
+                </div>
+
+
+                <div class="header-divider"></div>
+                <h1 id="header-code" class="header-page-title"></h1>
+
+            </div>
+
+            <div class="header-right">
+                <button class="icon-btn dark"><i class="ph ph-dots-three-vertical"></i></button>
+            </div>
+        </header>
+
+        <!-- Hero Image -->
+        <div class="hero-image-container">
+            <img id="hero-image" src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&q=80&w=800" alt="Asset Image">
+        </div>
+
+        <!-- Info Section -->
+        <div class="details-content">
+            <div class="header-tag-row">
+                <span class="blue-tag" id="tag-code" style="background: var(--tag-bg); color: var(--primary-color);"></span>
+                <div class="status" id="tag-status"><span class="dot"></span> <span id="status-text"></span></div>
+            </div>
+            
+            <h2 class="main-title" id="detail-name">Loading...</h2>
+            <p class="subtitle" id="detail-type-subtitle"></p>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="goEditAsset()"><i class="ph ph-pencil-simple"></i> Edit Asset</button>
+                <button class="btn btn-outline btn-icon"><i class="ph ph-qr-code"></i></button>
+            </div>
+
+            <!-- General Info Card -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="ph-fill ph-info"></i>
+                    <h3>GENERAL INFORMATION</h3>
+                </div>
+                <div class="info-list">
+                    <div class="info-row">
+                        <span class="info-label">Asset Code</span>
+                        <span class="info-value" id="info-code"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Manufacturer</span>
+                        <span class="info-value" id="info-manufacturer"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Model/Spec</span>
+                        <span class="info-value" id="info-model"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Asset Attribution</span>
+                        <span class="info-value" id="info-attribution"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Serial Number</span>
+                        <span class="info-value" id="info-serial"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Quantity</span>
+                        <span class="info-value" id="info-quantity"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Acquisition Date</span>
+                        <span class="info-value" id="info-acquisition-date"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="info-tag blue" id="info-status"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Asset</span>
+                        <div id="info-type"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Usage & Responsibility Card -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="ph-fill ph-user"></i>
+                    <h3>USAGE & RESPONSIBILITY</h3>
+                </div>
+                
+                <div class="sub-section">
+                    <p class="sub-label">PURPOSE OF USE</p>
+                    <p class="sub-value" id="info-purpose">—</p>
+                </div>
+
+                <div class="sub-section">
+                    <p class="sub-label">SUPPLIER</p>
+                    <p class="sub-value supplier-value"><i class="ph ph-storefront"></i> <span id="info-supplier">—</span></p>
+                </div>
+
+                <div class="sub-section">
+                    <p class="sub-label">LOCATION</p>
+                    <p class="sub-value"><i class="ph ph-map-pin"></i> <span id="info-location">—</span></p>
+                </div>
+            </div>
+
+            <!-- Financial Data Card -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="ph-fill ph-money"></i>
+                    <h3>FINANCIAL DATA</h3>
+                </div>
+                
+                <div class="sub-section">
+                    <p class="sub-label">Total Amount (Nguyên giá)</p>
+                    <p class="price-value" id="info-total-amount">—</p>
+                </div>
+
+                <div class="finance-grid">
+                    <div class="finance-box">
+                        <p class="sub-label">DEPRECIATION</p>
+                        <p class="finance-val" id="info-month">—</p>
+                    </div>
+                    <div class="finance-box">
+                        <p class="sub-label">REMAINING VALUE</p>
+                        <p class="finance-val blue-text" id="info-remaining">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Tags -->
+            <div class="bottom-tags" id="bottom-tags">
+            </div>
+
+            <!-- Delete Button container -->
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-outline" style="width: 100%; color: #DC2626; background: #FEF2F2; border-color: #FECACA;" onclick="openDeleteModal()">
+                    <i class="ph-fill ph-trash"></i> Delete Asset
+                </button>
+            </div>
+        </div>
+
+        <!-- Delete Modal -->
+        <div id="deleteModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-icon">
+                    <i class="ph-fill ph-warning"></i>
+                </div>
+                <h3 class="modal-title">Xác nhận xóa tài sản</h3>
+                <p class="modal-text" id="delete-modal-text">Bạn có chắc chắn muốn xóa tài sản này không? Hành động này không thể hoàn tác.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-danger" onclick="confirmDelete()">Xác nhận xóa</button>
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentAsset = null;
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const targetCode = localStorage.getItem('currentViewAsset');
+                const assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+                
+                if (targetCode) {
+                    currentAsset = assets.find(a => a.code === targetCode);
+                }
+                if (!currentAsset && assets.length > 0) {
+                    currentAsset = assets[0];
+                }
+
+                if (currentAsset) {
+                    populateDetails(currentAsset);
+                }
+            });
+
+            function fixDriveImageUrl(url) {
+                if (!url || typeof url !== 'string') return url;
+                if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+                    const dMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                    const idMatch = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                    const id = (dMatch && dMatch[1]) || (idMatch && idMatch[1]);
+                    if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+                }
+                return url;
+            }
+
+            function populateDetails(asset) {
+                // Header
+                const hCode = document.getElementById('header-code');
+                if (hCode) hCode.innerText = asset.code || 'Asset Details';
+
+                // Hero image with self-healing and premium error state
+                const heroImg = document.getElementById('hero-image');
+                if (!heroImg) return;
+
+                const fixedUrl = fixDriveImageUrl(asset.image);
+                
+                if (fixedUrl) {
+                    heroImg.src = fixedUrl;
+                    heroImg.onerror = function() {
+                        this.style.display = 'none';
+                        let isDrive = asset.image && asset.image.includes('drive.google.com');
+                        this.parentElement.innerHTML = `
+                            <div class="image-error-premium">
+                                <div class="error-visual">
+                                    <i class="ph-fill ph-image-broken"></i>
+                                    <div class="error-badge">!</div>
+                                </div>
+                                <h4>Image failed to load</h4>
+                                <p>${isDrive ? 'This Google Drive link is restricted or invalid.' : 'The image link provided is not accessible.'}</p>
+                                ${isDrive ? `
+                                    <button class="btn-help" onclick="alert('CÁCH SỬA:\\n1. Mở ảnh trên Google Drive\\n2. Chọn Chia sẻ (Share)\\n3. Chuyển sang \\'Bất kỳ ai có liên kết\\' (Anyone with the link)\\n4. Nhấn Xong.')">
+                                        <i class="ph ph-question"></i> How to fix sharing
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `;
+                    };
+                } else {
+                    heroImg.style.display = 'none';
+                    heroImg.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:200px;background:#EEF2FF;color:#6366F1;font-size:48px;"><i class="ph ph-cube"></i></div>';
+                }
+
+                // Tag row
+                document.getElementById('tag-code').innerText = asset.code || '';
+
+                // Status
+                const statusDiv = document.getElementById('tag-status');
+                const statusText = document.getElementById('status-text');
+                const rawStatus = (asset.status || 'available').toString().toLowerCase().trim();
+                let displayStatus = rawStatus.replace(/-/g, ' ').toUpperCase();
+                
+                statusDiv.className = 'status bold';
+                
+                const isDispose = rawStatus.includes('dispose') || rawStatus.includes('thanh lý') || rawStatus.includes('liquidated');
+                const isInUse = rawStatus.includes('in-use') || rawStatus.includes('inuse') || rawStatus.includes('use') || rawStatus.includes('active') || rawStatus.includes('available');
+
+                if (isDispose) {
+                    statusDiv.classList.add('maintenance'); // Use maintenance color (orange) for dispose
+                    displayStatus = 'DISPOSE';
+                } else if (isInUse) {
+                    statusDiv.classList.add('available');
+                    displayStatus = 'IN USE';
+                } else if (rawStatus.includes('maint')) {
+                    statusDiv.classList.add('maintenance');
+                    displayStatus = 'MAINTENANCE';
+                } else {
+                    statusDiv.classList.add('available');
+                    displayStatus = rawStatus.toUpperCase();
+                }
+                statusText.innerText = displayStatus;
+
+                // Name & subtitle
+                document.getElementById('detail-name').innerText = asset.name || 'Unknown Asset';
+                document.getElementById('detail-type-subtitle').innerHTML = 
+                    (asset.asset || asset.assetType || asset.type || 'General') + ' <span class="dot-separator">•</span> ' + (asset.location || 'Unassigned');
+
+
+                // General Information
+                document.getElementById('info-code').innerText = asset.code || '—';
+                document.getElementById('info-manufacturer').innerText = asset.manufacturer || '—';
+                document.getElementById('info-model').innerText = asset.model || '—';
+                document.getElementById('info-attribution').innerText = asset.attribution || '—';
+                document.getElementById('info-serial').innerText = asset.serialNo || '—';
+                // Asset Type Tag logic
+                const infoTypeContainer = document.getElementById('info-type');
+                let assetTypeVal = asset.asset || asset.assetType || asset.type || '';
+                
+                // Fallback: If type is empty, try to derive from Code prefix
+                if (!assetTypeVal && asset.code) {
+                    const codeUpper = asset.code.toUpperCase();
+                    if (codeUpper.startsWith('AOB')) assetTypeVal = 'Asset On Book';
+                    else if (codeUpper.startsWith('OOB')) assetTypeVal = 'Asset Out of Book';
+                }
+
+                // Normalizing values
+                if (assetTypeVal) {
+                    const upper = assetTypeVal.toUpperCase();
+                    if (upper === 'AOB' || upper === 'ASSET ON BOOK') assetTypeVal = 'Asset On Book';
+                    else if (upper === 'OOB' || upper === 'ASSET OUT OF BOOK') assetTypeVal = 'Asset Out of Book';
+                }
+
+                const typeMap = {
+                    'Asset On Book': { class: 'aob', icon: 'ph-book-bookmark' },
+                    'Asset Out of Book': { class: 'oob', icon: 'ph-book' }
+                };
+
+                if (assetTypeVal && typeMap[assetTypeVal]) {
+                    const mapping = typeMap[assetTypeVal];
+                    infoTypeContainer.innerHTML = `<span class="type-tag ${mapping.class}"><i class="ph-fill ${mapping.icon}"></i> ${assetTypeVal}</span>`;
+                } else {
+                    infoTypeContainer.innerHTML = `<span class="info-value">—</span>`;
+                }
+
+                document.getElementById('info-quantity').innerText = asset.quantity || '—';
+                document.getElementById('info-acquisition-date').innerText = formatDate(asset.acquisitionDate);
+                document.getElementById('info-status').innerText = displayStatus;
+
+
+                // Usage & Responsibility
+                document.getElementById('info-purpose').innerText = asset.usingPurpose || '—';
+                document.getElementById('info-supplier').innerText = asset.suppliers || '—';
+                document.getElementById('info-location').innerText = asset.location || '—';
+
+                // Financial Data
+                const totalAmount = asset.totalAmount;
+                document.getElementById('info-total-amount').innerText = totalAmount ? formatCurrency(totalAmount) : '—';
+                document.getElementById('info-month').innerText = asset.month ? asset.month + ' Months' : '—';
+                const remainingValue = asset.remainingValue;
+                document.getElementById('info-remaining').innerText = remainingValue ? formatCurrency(remainingValue) : '—';
+
+
+                // Bottom Tags
+                const tagsContainer = document.getElementById('bottom-tags');
+                tagsContainer.innerHTML = '';
+                if (asset.location) addTag(tagsContainer, asset.location);
+                if (asset.type) addTag(tagsContainer, asset.type);
+                if (asset.manufacturer) addTag(tagsContainer, asset.manufacturer);
+
+                // Delete modal text
+                document.getElementById('delete-modal-text').innerHTML = 
+                    `Bạn có chắc chắn muốn xóa tài sản <strong>"${asset.name || 'this asset'}"</strong> không? Hành động này không thể hoàn tác.`;
+            }
+
+            function formatCurrency(value) {
+                if (!value) return '—';
+                // Use robust parser for VN formatted strings if needed
+                let num = typeof value === 'string' ? parseVNNumber(value) : parseFloat(value);
+                if (isNaN(num)) return value.toString();
+                return num.toLocaleString('vi-VN') + ' đ';
+            }
+
+            function parseVNNumber(str) {
+                if (!str) return 0;
+                if (typeof str === 'number') return str;
+                // Remove spaces and currency symbol
+                str = str.toString().replace(/[₫đ\s]/g, '');
+                // Handle Vietnamese format: 1.234.567,89 or 1,234,567.89
+                // If there's a dot AND a comma
+                if (str.includes('.') && str.includes(',')) {
+                    if (str.indexOf('.') < str.indexOf(',')) {
+                        // 1.234.567,89 -> remove dot, replace comma with dot
+                        str = str.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        // 1,234,567.89 -> remove comma
+                        str = str.replace(/,/g, '');
+                    }
+                } else if (str.includes(',')) {
+                    // Could be 1.234,56 or 1234,56
+                    // If multiple commas, it's thousands separator
+                    if ((str.match(/,/g) || []).length > 1) {
+                        str = str.replace(/,/g, '');
+                    } else {
+                        // Single comma: might be decimal. 
+                        // But in VN, they often use dot for thousands.
+                        // Let's assume comma is decimal if it's towards the end.
+                        str = str.replace(',', '.');
+                    }
+                } else if (str.includes('.')) {
+                    // If multiple dots, it's thousands separator
+                    if ((str.match(/\./g) || []).length > 1) {
+                        str = str.replace(/\./g, '');
+                    }
+                }
+                return parseFloat(str) || 0;
+            }
+
+
+            function formatDate(val) {
+                if (!val) return '—';
+                let date;
+                if (typeof val === 'string' && val.includes('Date(')) {
+                    const match = val.match(/Date\((\d+),(\d+),(\d+)\)/);
+                    if (match) {
+                        // Assuming string format is Date(YYYY,MM,DD) where MM is 1-indexed
+                        date = new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+                    }
+                }
+                
+                if (!date) {
+                    if (!isNaN(val) && val > 20000) {
+                        date = new Date((val - 25569) * 86400 * 1000);
+                    } else {
+                        date = new Date(val);
+                    }
+                }
+                
+                if (isNaN(date.getTime())) return val;
+                const d = String(date.getDate()).padStart(2, '0');
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const y = date.getFullYear();
+                return `${d}/${m}/${y}`;
+            }
+
+
+            function addTag(container, text) {
+                const span = document.createElement('span');
+                span.className = 'btm-tag';
+                span.innerText = text;
+                container.appendChild(span);
+            }
+
+            function goEditAsset() {
+                window.location.href = 'edit-asset.html';
+            }
+
+            function openDeleteModal() {
+                document.getElementById('deleteModal').classList.add('active');
+            }
+            function closeDeleteModal() {
+                document.getElementById('deleteModal').classList.remove('active');
+            }
+
+            function confirmDelete() {
+                const targetCode = localStorage.getItem('currentViewAsset');
+                let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+                
+                if (targetCode) {
+                    assets = assets.filter(a => a.code !== targetCode);
+                    localStorage.setItem('myAssets', JSON.stringify(assets));
+                    localStorage.removeItem('currentViewAsset');
+                } else {
+                    if(assets.length > 0) assets.shift();
+                    localStorage.setItem('myAssets', JSON.stringify(assets));
+                }
+
+                alert('Tài sản đã được xóa khỏi hệ thống!');
+                window.location.href = 'index.html';
+            }
+
+            // ===================== DRAGGABLE FAB =====================
+            (function() {
+                const fab = document.querySelector('.fab');
+                if (!fab) return;
+
+                let isDragging = false;
+                let startX, startY, initialRight, initialBottom;
+                const threshold = 5;
+
+                const savedPos = JSON.parse(localStorage.getItem('fabPosition') || 'null');
+                if (savedPos) {
+                    fab.style.right = savedPos.right;
+                    fab.style.bottom = savedPos.bottom;
+                    fab.style.left = 'auto';
+                    fab.style.top = 'auto';
+                }
+
+                function onStart(e) {
+                    isDragging = false;
+                    const touch = e.type === 'touchstart' ? e.touches[0] : e;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    const rect = fab.getBoundingClientRect();
+                    initialRight = window.innerWidth - rect.right;
+                    initialBottom = window.innerHeight - rect.bottom;
+                    fab.style.transition = 'none';
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd);
+                }
+
+                function onMove(e) {
+                    const touch = e.type === 'touchmove' ? e.touches[0] : e;
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    if (!isDragging && (Math.abs(dx) > threshold || Math.abs(dy) > threshold)) isDragging = true;
+                    if (isDragging) {
+                        if (e.cancelable) e.preventDefault();
+                        let newRight = initialRight - dx;
+                        let newBottom = initialBottom - dy;
+                        const padding = 10;
+                        const fabSize = 56;
+                        newRight = Math.max(padding, Math.min(newRight, window.innerWidth - fabSize - padding));
+                        newBottom = Math.max(padding, Math.min(newBottom, window.innerHeight - fabSize - padding));
+                        fab.style.right = newRight + 'px';
+                        fab.style.bottom = newBottom + 'px';
+                        fab.style.left = 'auto';
+                        fab.style.top = 'auto';
+                    }
+                }
+
+                function onEnd() {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onEnd);
+                    document.removeEventListener('touchmove', onMove);
+                    document.removeEventListener('touchend', onEnd);
+                    if (isDragging) {
+                        fab.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); }, { once: true, capture: true });
+                        localStorage.setItem('fabPosition', JSON.stringify({ right: fab.style.right, bottom: fab.style.bottom }));
+                    }
+                    fab.style.transition = 'transform 0.2s';
+                }
+                fab.addEventListener('mousedown', onStart);
+                fab.addEventListener('touchstart', onStart, { passive: true });
+            })();
+        </script>
+
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="ph ph-package"></i><span>Assets</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <i class="ph ph-chart-pie"></i><span>Dashboard</span>
+            </a>
+            <button class="fab" onclick="window.location.href='add-asset.html'">
+                <i class="ph ph-plus"></i>
+            </button>
+            <a href="directory.html" class="nav-item">
+                <i class="ph ph-users-three"></i><span>Contact</span>
+            </a>
+            <a href="import-gsheet.html" class="nav-item">
+                <i class="ph ph-file-arrow-up"></i><span>Import</span>
+            </a>
+        </nav>
+
+    </div>
+</body>
+</html>

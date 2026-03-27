@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-branding" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <img src="assets/logo_daewoo.png" alt="Daewoo E&C Vina" class="logo-img">
+            </div>
+
+            <div class="header-right">
+
+                <button class="icon-btn dark" onclick="sendBulkAutoEmail()" title="Gửi mail tự động hàng loạt"><i class="ph ph-magic-wand"></i></button>
+                <button class="icon-btn dark"><i class="ph ph-dots-three-vertical"></i></button>
+            </div>
+        </header>
+
+        <!-- Search -->
+        <div class="search-container" style="padding-top: 8px;">
+            <div class="search-box">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" placeholder="Search contacts or departments">
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="directory-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Personnel</button>
+            <button class="filter-btn">Departments</button>
+            <button class="filter-btn">Suppliers</button>
+        </div>
+
+        <!-- Key Personnel Section -->
+        <h2 class="section-title">KEY PERSONNEL</h2>
+        <div class="directory-list" id="contacts-container">
+            <!-- Contacts will be loaded here dynamically -->
+        </div>
+
+        <!-- Departments Section -->
+        <h2 class="section-title">DEPARTMENTS</h2>
+        <div class="directory-list">
+            <div class="list-card">
+                <div class="icon-lg-box">
+                    <i class="ph ph-headset"></i>
+                </div>
+                <div class="list-card-content">
+                    <h3>IT Support Desk</h3>
+                    <p>4 Active Personnel</p>
+                </div>
+                <i class="ph ph-caret-right" style="color: #9CA3AF; font-size: 20px;"></i>
+            </div>
+
+            <div class="list-card">
+                <div class="icon-lg-box">
+                    <i class="ph ph-shopping-cart"></i>
+                </div>
+                <div class="list-card-content">
+                    <h3>Asset Procurement</h3>
+                    <p>2 Active Personnel</p>
+                </div>
+                <i class="ph ph-caret-right" style="color: #9CA3AF; font-size: 20px;"></i>
+            </div>
+        </div>
+
+        <!-- Spacer for safe area padding since list finishes above nav -->
+        <div style="height: 20px;"></div>
+
+        <!-- FAB -->
+        <button class="fab main-fab" onclick="window.location.href='add-contact.html'">
+            <i class="ph ph-plus"></i>
+        </button>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="ph ph-package"></i><span>Tài sản</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <i class="ph ph-chart-pie"></i><span>Dashboard</span>
+            </a>
+            <button class="fab center-fab" onclick="window.location.href='add-asset.html'">
+                <i class="ph ph-plus"></i>
+            </button>
+            <a href="directory.html" class="nav-item active">
+                <i class="ph ph-users-three"></i><span>Liên hệ</span>
+            </a>
+            <a href="import-gsheet.html" class="nav-item">
+                <i class="ph ph-file-arrow-up"></i><span>Import</span>
+            </a>
+        </nav> 
+
+    </div>
+
+    <script>
+        const defaultContacts = [
+            {
+                id: 1,
+                name: "David Chen",
+                title: "Head of Asset Logistics",
+                department: "Asset Procurement",
+                phone: "+1 (555) 123-4567",
+                email: "david.chen@logistics.corp",
+                image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=150&q=80"
+            },
+            {
+                id: 2,
+                name: "Sarah Jenkins",
+                title: "Finance Controller",
+                department: "Finance",
+                phone: "+1 (555) 987-6543",
+                email: "sarah.j@finance.corp",
+                image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80"
+            }
+        ];
+
+        if (!localStorage.getItem('contacts')) {
+            localStorage.setItem('contacts', JSON.stringify(defaultContacts));
+        }
+
+        function renderContacts() {
+            const contacts = JSON.parse(localStorage.getItem('contacts'));
+            const container = document.getElementById('contacts-container');
+            container.innerHTML = '';
+            
+            contacts.forEach(contact => {
+                const card = document.createElement('div');
+                card.className = 'list-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => window.location.href = `edit-contact.html?id=${contact.id}`;
+                
+                card.innerHTML = `
+                    <img src="${contact.image}" alt="${contact.name}" class="avatar-lg">
+                    <div class="list-card-content">
+                        <h3>${contact.name}</h3>
+                        <p>${contact.title}</p>
+                    </div>
+                    <div class="list-actions">
+                        <button class="btn-circular" onclick="event.stopPropagation(); window.location.href='tel:${contact.phone}'" title="Gọi điện"><i class="ph-fill ph-phone"></i></button>
+                        <button class="btn-circular" onclick="event.stopPropagation(); sendAutoEmail(${contact.id})" title="Gửi mail tự động"><i class="ph-fill ph-paper-plane-tilt"></i></button>
+                        <button class="btn-circular secondary" onclick="event.stopPropagation(); window.location.href='mailto:${contact.email}'" title="Gửi mail"><i class="ph-fill ph-envelope-simple"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="ph-fill ${type === 'success' ? 'ph-check-circle' : 'ph-info'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after 3s
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function sendAutoEmail(id) {
+            const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+            const contact = contacts.find(c => c.id === id);
+            
+            if (!contact) {
+                showToast('Không tìm thấy liên hệ!', 'error');
+                return;
+            }
+
+            showToast(`Đang chuẩn bị bản thảo cho ${contact.name}...`, 'info');
+            
+            // Generate mailto link
+            const subject = encodeURIComponent(`[Báo cáo Tài sản] - ${contact.name}`);
+            const body = encodeURIComponent(
+                `Chào ${contact.name},\n\n` +
+                `Đây là báo cáo tổng hợp tài sản được gửi từ hệ thống quản lý.\n\n` +
+                `Vui lòng kiểm tra và phản hồi nếu có sai sót.\n\n` +
+                `Trân trọng,\nHệ thống Quản lý Tài sản`
+            );
+            
+            const mailtoUrl = `mailto:${contact.email}?subject=${subject}&body=${body}`;
+            
+            setTimeout(() => {
+                window.location.href = mailtoUrl;
+                showToast(`Đã mở ứng dụng Mail để gửi cho ${contact.name}!`);
+            }, 800);
+        }
+
+        function sendBulkAutoEmail() {
+            const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+            if (contacts.length === 0) {
+                showToast('Không có liên hệ để gửi!', 'error');
+                return;
+            }
+            
+            showToast(`Đang gom danh sách ${contacts.length} email...`, 'info');
+            
+            const emails = contacts.map(c => c.email).filter(Boolean).join(',');
+            
+            if (!emails) {
+                showToast('Không có địa chỉ email hợp lệ!', 'error');
+                return;
+            }
+
+            const subject = encodeURIComponent(`[Báo cáo Tổng hợp] - Toàn bộ nhân sự`);
+            const body = encodeURIComponent(
+                `Kính gửi bộ phận liên quan,\n\n` +
+                `Đây là bản tổng hợp báo cáo tài sản cho toàn bộ nhân sự trong danh bạ.\n\n` +
+                `Số lượng liên hệ: ${contacts.length}\n\n` +
+                `Trân trọng,\nHệ thống Quản lý Tài sản`
+            );
+            
+            const mailtoUrl = `mailto:${emails}?subject=${subject}&body=${body}`;
+            
+            setTimeout(() => {
+                window.location.href = mailtoUrl;
+                showToast(`Đã mở bản thảo gửi cho toàn bộ danh bạ!`);
+            }, 800);
+        }
+
+
+        document.addEventListener('DOMContentLoaded', renderContacts);
+
+        // ===================== DRAGGABLE FAB =====================
+        (function() {
+            const fabs = document.querySelectorAll('.fab');
+            const threshold = 5;
+            const savedPos = JSON.parse(localStorage.getItem('fabPosition') || 'null');
+
+            fabs.forEach(fab => {
+                if (savedPos) {
+                    fab.style.right = savedPos.right;
+                    fab.style.bottom = savedPos.bottom;
+                    fab.style.left = 'auto';
+                    fab.style.top = 'auto';
+                }
+
+                let isDragging = false;
+                let startX, startY, initialRight, initialBottom;
+
+                function onStart(e) {
+                    isDragging = false;
+                    const touch = e.type === 'touchstart' ? e.touches[0] : e;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    const rect = fab.getBoundingClientRect();
+                    initialRight = window.innerWidth - rect.right;
+                    initialBottom = window.innerHeight - rect.bottom;
+                    fab.style.transition = 'none';
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd);
+                }
+
+                function onMove(e) {
+                    const touch = e.type === 'touchmove' ? e.touches[0] : e;
+                    const dx = touch.clientX - startX;
+                    const dy = touch.clientY - startY;
+                    if (!isDragging && (Math.abs(dx) > threshold || Math.abs(dy) > threshold)) isDragging = true;
+                    if (isDragging) {
+                        if (e.cancelable) e.preventDefault();
+                        let newRight = initialRight - dx;
+                        let newBottom = initialBottom - dy;
+                        const padding = 10;
+                        const fabSize = 56;
+                        newRight = Math.max(padding, Math.min(newRight, window.innerWidth - fabSize - padding));
+                        newBottom = Math.max(padding, Math.min(newBottom, window.innerHeight - fabSize - padding));
+                        
+                        // Apply to all FABs for consistency on this page
+                        fabs.forEach(f => {
+                            f.style.right = newRight + 'px';
+                            f.style.bottom = newBottom + 'px';
+                            f.style.left = 'auto';
+                            f.style.top = 'auto';
+                        });
+                    }
+                }
+
+                function onEnd() {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onEnd);
+                    document.removeEventListener('touchmove', onMove);
+                    document.removeEventListener('touchend', onEnd);
+                    if (isDragging) {
+                        fab.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); }, { once: true, capture: true });
+                        localStorage.setItem('fabPosition', JSON.stringify({ right: fab.style.right, bottom: fab.style.bottom }));
+                    }
+                    fabs.forEach(f => f.style.transition = 'transform 0.2s');
+                }
+                fab.addEventListener('mousedown', onStart);
+                fab.addEventListener('touchstart', onStart, { passive: true });
+            });
+        })();
+    </script>
+
+</body>
+</html>

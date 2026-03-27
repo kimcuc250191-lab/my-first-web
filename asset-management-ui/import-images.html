@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Images</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .import-images-page { padding: 16px; }
+        .drop-area {
+            border: 2px dashed #D1D5DB;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #fff;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .drop-area.dragover {
+            border-color: #4F46E5;
+            background: rgba(79, 70, 229, 0.04);
+        }
+        .drop-area .icon { font-size: 48px; color: #6366F1; margin-bottom: 12px; }
+        .drop-area h3 { font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 6px; }
+        .drop-area p { font-size: 13px; color: #9CA3AF; margin: 0; }
+
+        .match-summary {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .match-summary h3 { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: #1F2937; }
+
+        .match-list { display: flex; flex-direction: column; gap: 10px; }
+        .match-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #F9FAFB;
+            border: 1px solid #F3F4F6;
+        }
+        .match-item.matched { border-color: #BBF7D0; background: #F0FDF4; }
+        .match-item.unmatched { border-color: #FECACA; background: #FEF2F2; }
+        .match-item img {
+            width: 48px; height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .match-info { flex: 1; min-width: 0; }
+        .match-info .filename {
+            font-size: 13px; font-weight: 600; color: #1F2937;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .match-info .match-status { font-size: 12px; margin-top: 2px; }
+        .match-info .match-status.ok { color: #16A34A; }
+        .match-info .match-status.fail { color: #DC2626; }
+        .match-badge {
+            font-size: 11px; font-weight: 600; padding: 3px 8px;
+            border-radius: 20px; white-space: nowrap;
+        }
+        .match-badge.ok { background: #DCFCE7; color: #166534; }
+        .match-badge.fail { background: #FEE2E2; color: #991B1B; }
+
+        .stats-row {
+            display: flex; gap: 10px; margin-top: 16px;
+        }
+        .stat-card {
+            flex: 1; text-align: center; padding: 14px 8px;
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .stat-card .stat-num { font-size: 24px; font-weight: 700; color: #1F2937; }
+        .stat-card .stat-label { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+        .stat-card.green .stat-num { color: #16A34A; }
+        .stat-card.red .stat-num { color: #DC2626; }
+
+        .apply-section {
+            position: sticky; bottom: 0;
+            padding: 16px; background: #F8F9FB;
+            border-top: 1px solid #E5E7EB;
+            margin: 16px -16px -16px;
+        }
+    </style>
+</head>
+<body class="bg-gray">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header detail-header">
+            <div class="header-left">
+                <a href="index.html" class="icon-btn dark"><i class="ph ph-arrow-left"></i></a>
+                <h1>Import Images</h1>
+            </div>
+        </header>
+
+        <div class="import-images-page">
+            <!-- Instructions -->
+            <div style="background:#EEF2FF; border-radius:12px; padding:14px 16px; margin-bottom:16px; display:flex; gap:10px; align-items:flex-start;">
+                <i class="ph-fill ph-info" style="color:#6366F1; font-size:20px; margin-top:1px;"></i>
+                <div style="font-size:13px; color:#374151; line-height:1.5;">
+                    <strong>Hướng dẫn:</strong> Chọn thư mục ảnh chứa các file hình. Tên file ảnh (không tính đuôi mở rộng) sẽ được so khớp với <strong>mã tài sản (Asset Code)</strong> để gán ảnh tương ứng.<br>
+                    <em>Ví dụ: file <code>AST-001.jpg</code> → tài sản có mã <code>AST-001</code></em>
+                </div>
+            </div>
+
+            <!-- Drop Area -->
+            <div class="drop-area" id="drop-area" onclick="document.getElementById('folder-input').click()">
+                <div class="icon"><i class="ph ph-folder-open"></i></div>
+                <h3>Chọn thư mục ảnh</h3>
+                <p>Hỗ trợ JPG, PNG, GIF, WebP</p>
+            </div>
+            <input type="file" id="folder-input" webkitdirectory multiple accept="image/*" style="display:none;">
+
+            <!-- Stats -->
+            <div class="stats-row" id="stats-row" style="display:none;">
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-total">0</div>
+                    <div class="stat-label">Total Images</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-num" id="stat-matched">0</div>
+                    <div class="stat-label">Matched</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-num" id="stat-unmatched">0</div>
+                    <div class="stat-label">Unmatched</div>
+                </div>
+            </div>
+
+            <!-- Match Results -->
+            <div class="match-summary" id="match-summary" style="display:none;">
+                <h3>Match Results</h3>
+                <div class="match-list" id="match-list"></div>
+            </div>
+
+            <!-- Apply Button -->
+            <div class="apply-section" id="apply-section" style="display:none;">
+                <button class="btn btn-primary" style="width:100%;" onclick="applyImages()">
+                    <i class="ph-fill ph-check-circle"></i> Áp dụng ảnh cho tài sản
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const folderInput = document.getElementById('folder-input');
+        const dropArea = document.getElementById('drop-area');
+        let matchResults = []; // {filename, assetCode, dataUrl, matched, assetName}
+
+        // Drag & drop
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            const items = e.dataTransfer.items;
+            if (items) {
+                const files = [];
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].kind === 'file') {
+                        const file = items[i].getAsFile();
+                        if (file.type.startsWith('image/')) files.push(file);
+                    }
+                }
+                if (files.length > 0) processFiles(files);
+            }
+        });
+
+        folderInput.addEventListener('change', (e) => {
+            const allFiles = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+            if (allFiles.length > 0) processFiles(allFiles);
+        });
+
+        async function processFiles(files) {
+            const assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+            matchResults = [];
+            let processed = 0;
+
+            // Update drop area to show loading
+            dropArea.innerHTML = `
+                <div class="icon"><i class="ph ph-spinner" style="animation: spin 1s linear infinite;"></i></div>
+                <h3>Đang xử lý ${files.length} ảnh...</h3>
+                <p>Vui lòng chờ hệ thống nén và tối ưu ảnh</p>
+            `;
+
+            for (const file of files) {
+                try {
+                    const dataUrl = await readFileAsDataURL(file);
+                    const compressedUrl = await compressImage(dataUrl, 800, 800, 0.7);
+                    const filename = file.name;
+                    const nameWithoutExt = filename.replace(/\.[^.]+$/, '').trim();
+
+                    const matchedAsset = assets.find(a => {
+                        const code = (a.code || '').toString().trim().toLowerCase();
+                        return code === nameWithoutExt.toLowerCase();
+                    });
+
+                    matchResults.push({
+                        filename,
+                        assetCode: nameWithoutExt,
+                        dataUrl: compressedUrl,
+                        matched: !!matchedAsset,
+                        assetName: matchedAsset ? matchedAsset.name : null
+                    });
+                } catch (err) {
+                    console.error('Error processing file:', file.name, err);
+                } finally {
+                    processed++;
+                    if (processed === files.length) {
+                        renderResults();
+                    }
+                }
+            }
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function compressImage(dataUrl, maxWidth, maxHeight, quality) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.src = dataUrl;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = reject;
+            });
+        }
+
+        function renderResults() {
+            // Sort: matched first
+            matchResults.sort((a, b) => (b.matched ? 1 : 0) - (a.matched ? 1 : 0));
+
+            const matched = matchResults.filter(r => r.matched).length;
+            const unmatched = matchResults.length - matched;
+
+            // Update drop area
+            dropArea.innerHTML = `
+                <div class="icon"><i class="ph-fill ph-check-circle" style="color:#16A34A;"></i></div>
+                <h3>${matchResults.length} ảnh đã được đọc</h3>
+                <p>Bấm để chọn lại thư mục khác</p>
+            `;
+
+            // Stats
+            document.getElementById('stats-row').style.display = 'flex';
+            document.getElementById('stat-total').innerText = matchResults.length;
+            document.getElementById('stat-matched').innerText = matched;
+            document.getElementById('stat-unmatched').innerText = unmatched;
+
+            // Match list
+            const listEl = document.getElementById('match-list');
+            listEl.innerHTML = '';
+            matchResults.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'match-item ' + (r.matched ? 'matched' : 'unmatched');
+                item.innerHTML = `
+                    <img src="${r.dataUrl}" alt="${r.filename}">
+                    <div class="match-info">
+                        <div class="filename">${r.filename}</div>
+                        <div class="match-status ${r.matched ? 'ok' : 'fail'}">
+                            ${r.matched 
+                                ? `→ ${r.assetName} (${r.assetCode})` 
+                                : `Không tìm thấy mã "${r.assetCode}"`
+                            }
+                        </div>
+                    </div>
+                    <span class="match-badge ${r.matched ? 'ok' : 'fail'}">
+                        ${r.matched ? 'Matched' : 'No match'}
+                    </span>
+                `;
+                listEl.appendChild(item);
+            });
+
+            document.getElementById('match-summary').style.display = 'block';
+
+            // Show apply button only if there are matches
+            if (matched > 0) {
+                document.getElementById('apply-section').style.display = 'block';
+            }
+        }
+
+        function applyImages() {
+            const btn = document.querySelector('.apply-section .btn');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-spinner spin"></i> Đang lưu dữ liệu...';
+
+            setTimeout(() => {
+                try {
+                    let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+                    let count = 0;
+
+                    matchResults.forEach(r => {
+                        if (!r.matched) return;
+                        const idx = assets.findIndex(a => 
+                            (a.code || '').toString().trim().toLowerCase() === r.assetCode.toLowerCase()
+                        );
+                        if (idx !== -1) {
+                            assets[idx].image = r.dataUrl;
+                            count++;
+                        }
+                    });
+
+                    localStorage.setItem('myAssets', JSON.stringify(assets));
+                    alert(`Đã cập nhật ảnh cho ${count} tài sản thành công!`);
+                    window.location.href = 'index.html';
+                } catch (err) {
+                    console.error('Save failed:', err);
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+
+                    if (err.name === 'QuotaExceededError' || err.code === 22) {
+                        alert('LỖI: Trình duyệt hết bộ nhớ lưu trữ! \n\nNguyên nhân: Tổng dung lượng ảnh quá lớn. \nCách khắc phục: \n1. Vui lòng chọn ít ảnh hơn mỗi lần import. \n2. Giảm dung lượng ảnh trước khi chọn thư mục.');
+                    } else {
+                        alert('Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+                    }
+                }
+            }, 100);
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin { animation: spin 1s linear infinite; }
+    </style>
+</body>
+</html>

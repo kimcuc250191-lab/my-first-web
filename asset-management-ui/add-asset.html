@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Asset</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header detail-header">
+            <div class="header-left">
+                <a href="index.html" class="icon-btn dark"><i class="ph ph-arrow-left"></i></a>
+                <div class="logo-branding" style="margin-left: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+                    <img src="assets/logo_daewoo.png" alt="Daewoo E&C Vina" class="logo-img" style="height: 24px;">
+                </div>
+                <div class="header-divider"></div>
+                <h1 class="header-page-title">Add New Asset</h1>
+
+            </div>
+
+
+            <div class="header-right">
+            </div>
+        </header>
+
+        <div class="form-container">
+            <div class="tabs-container">
+                <div class="tab active" onclick="switchTab('manual', event)">Manual Entry</div>
+                <div class="tab" onclick="switchTab('import', event)">Import Excel</div>
+                <div class="tab" onclick="switchTab('gsheet', event)">Google Sheets</div>
+            </div>
+
+            <!-- Manual Form -->
+            <form id="manual-form" class="tab-content active" onsubmit="handleManualSubmit(event)">
+                
+                <div class="form-group file-upload" onclick="document.getElementById('asset-image-input').click()">
+                    <input type="file" id="asset-image-input" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
+                    <div id="image-preview" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <i class="ph ph-cloud-arrow-up"></i>
+                        <p>Tap to upload asset image</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Asset Name</label>
+                    <input type="text" id="asset-name" class="form-input" placeholder="e.g. MacBook Pro M3" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Asset</label>
+                    <select id="asset-type" class="form-select" required>
+                        <option value="Asset On Book" selected>Asset On Book (AOB)</option>
+                        <option value="Asset Out of Book">Asset Out of Book (OOB)</option>
+                    </select>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label class="form-label">Asset Code</label>
+                    <input type="text" id="asset-code" class="form-input" placeholder="e.g. AST-001" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Serial Number</label>
+                    <input type="text" id="asset-serial" class="form-input" placeholder="e.g. SN-XYZ-12345">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Distribution (Phân bổ)</label>
+                    <input type="text" id="asset-attribution" class="form-input" placeholder="e.g. HN-Office-01">
+                </div>
+
+
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" id="asset-location" class="form-input" placeholder="e.g. Office A, Floor 2">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Supplier</label>
+                    <input type="text" id="asset-supplier" class="form-input" placeholder="e.g. Dell Vietnam">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Acquisition Date</label>
+                    <input type="date" id="asset-date" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Original Cost ($)</label>
+                    <input type="number" id="asset-value" class="form-input" placeholder="0.00" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Depreciation (Months)</label>
+                    <input type="number" id="asset-month" class="form-input" placeholder="e.g. 36">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Remaining Value (₫)</label>
+                    <input type="number" id="asset-remaining" class="form-input" placeholder="0.00" step="0.01">
+                </div>
+
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="asset-status" class="form-select">
+                        <option value="available" selected>Available</option>
+                        <option value="in-use">In Use</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="dispose">Dispose</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea id="asset-notes" class="form-textarea" placeholder="Additional details..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="window.location.href='index.html'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Asset</button>
+                </div>
+            </form>
+
+            <!-- Import Form (Excel) -->
+            <div id="import-form" class="tab-content" style="text-align: center; padding: 40px 20px;">
+                <div class="box-icon" style="margin: 0 auto 16px;"><i class="ph-fill ph-file-xls"></i></div>
+                <h3 style="margin: 0 0 8px; font-size: 16px; color: #111827;">Bulk Import via Excel</h3>
+                <p class="upload-instructions" style="margin-bottom: 24px;">Automatically add multiple assets with our advanced import tool. Support for .xlsx, .xls and .csv files.</p>
+                <div class="form-actions" style="justify-content: center; margin-top: 0;">
+                    <button type="button" class="btn btn-primary" style="background-color: #107C41; flex: 0 1 auto; padding: 12px 32px;" onclick="window.location.href='import-excel.html'"><i class="ph ph-arrow-right"></i> Start Bulk Import</button>
+                </div>
+            </div>
+
+            <!-- Import Form (Google Sheets) -->
+            <div id="gsheet-form" class="tab-content" style="text-align: center; padding: 40px 20px;">
+                <div class="box-icon" style="margin: 0 auto 16px; color: #0F9D58;"><i class="ph-fill ph-google-logo"></i></div>
+                <h3 style="margin: 0 0 8px; font-size: 16px; color: #111827;">Import from Google Sheets</h3>
+                <p class="upload-instructions" style="margin-bottom: 24px;">Connect your Google Sheets data directly. Supports live fetching and field mapping.</p>
+                <div class="form-actions" style="justify-content: center; margin-top: 0;">
+                    <button type="button" class="btn btn-primary" style="background-color: #0F9D58; flex: 0 1 auto; padding: 12px 32px;" onclick="window.location.href='import-gsheet.html'"><i class="ph ph-link"></i> Start Sheet Import</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let selectedImageData = null;
+
+            function switchTab(tabId, e) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                (e.currentTarget || e.target).classList.add('active');
+                document.getElementById(tabId + '-form').classList.add('active');
+            }
+
+            function handleImageSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDimension = 800;
+
+                        if (width > height) {
+                            if (width > maxDimension) {
+                                height *= maxDimension / width;
+                                width = maxDimension;
+                            }
+                        } else {
+                            if (height > maxDimension) {
+                                width *= maxDimension / height;
+                                height = maxDimension;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        selectedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        const preview = document.getElementById('image-preview');
+                        preview.innerHTML = `<img src="${selectedImageData}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`;
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function handleManualSubmit(event) {
+                event.preventDefault();
+                
+                const newAsset = {
+                    name: document.getElementById('asset-name').value,
+                    asset: document.getElementById('asset-type').value,
+
+                    code: document.getElementById('asset-code').value,
+
+
+                    suppliers: document.getElementById('asset-supplier')?.value || '',
+                    acquisitionDate: document.getElementById('asset-date')?.value || '',
+                    totalAmount: document.getElementById('asset-value').value,
+                    remainingValue: document.getElementById('asset-remaining')?.value || '',
+                    month: document.getElementById('asset-month')?.value || '',
+                    notes: document.getElementById('asset-notes').value,
+                    image: selectedImageData,
+                    status: document.getElementById('asset-status').value
+                };
+
+
+                let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+                assets.unshift(newAsset);
+                
+                try {
+                    localStorage.setItem('myAssets', JSON.stringify(assets));
+                    alert('Asset saved successfully!');
+                    window.location.href = 'index.html';
+                } catch (e) {
+                    alert('Error saving asset: Storage quota exceeded. Try using a smaller image.');
+                }
+            }
+        </script>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="ph ph-package"></i><span>Tài sản</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <i class="ph ph-chart-pie"></i><span>Dashboard</span>
+            </a>
+            <a href="add-asset.html" class="nav-item active">
+                <i class="ph-fill ph-plus-circle"></i><span>Thêm mới</span>
+            </a>
+            <a href="directory.html" class="nav-item">
+                <i class="ph ph-users-three"></i><span>Liên hệ</span>
+            </a>
+            <a href="import-gsheet.html" class="nav-item">
+                <i class="ph ph-file-arrow-up"></i><span>Import</span>
+            </a>
+        </nav>
+
+    </div>
+</body>
+</html>

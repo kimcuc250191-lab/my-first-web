@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Manager - Trang chủ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* === Sync Panel === */
+        .sync-panel {
+            margin: 0 20px 24px;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        }
+        .sync-panel-header {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+        }
+        .sync-panel-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 14px; font-weight: 700; color: #111827;
+        }
+        .sync-panel-title i { font-size: 20px; color: #0F9D58; }
+        .sync-status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 600;
+        }
+        .sync-status-badge.connected { background: #ECFDF5; color: #059669; }
+        .sync-status-badge.disconnected { background: #F3F4F6; color: #6B7280; }
+        .sync-status-badge .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+        }
+        .sync-status-badge.connected .dot { background: #059669; }
+        .sync-status-badge.disconnected .dot { background: #9CA3AF; }
+        .sync-url-row {
+            display: flex; gap: 8px; margin-bottom: 12px;
+        }
+        .sync-url-row input {
+            flex: 1; padding: 10px 14px; border-radius: 12px;
+            border: 1px solid #E5E7EB; font-size: 13px;
+            font-family: 'Inter', sans-serif; outline: none;
+            transition: border-color 0.2s;
+        }
+        .sync-url-row input:focus { border-color: #2563EB; }
+        .sync-btn {
+            padding: 10px 18px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #0F9D58 0%, #0B8043 100%);
+            color: white; font-size: 13px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .sync-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,157,88,0.3); }
+        .sync-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .sync-info {
+            font-size: 12px; color: #6B7280; display: flex; align-items: center; gap: 6px;
+        }
+        .sync-info i { font-size: 14px; }
+        .sync-action-btn {
+            width: 40px; height: 40px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; border: 1px solid #E5E7EB;
+            background: white; color: #6B7280; font-size: 18px;
+        }
+        .sync-action-btn:hover { background: #F9FAFB; color: #111827; border-color: #D1D5DB; }
+        .sync-action-btn.delete:hover { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+        .sync-url-row input:read-only { background: #F9FAFB; color: #6B7280; cursor: default; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinning { animation: spin 1s linear infinite; display: inline-block; }
+
+
+
+        /* Modal animation */
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        #btn-delete-all:hover {
+            background: linear-gradient(135deg, #FECACA 0%, #FCA5A5 100%) !important;
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.25) !important;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+
+
+
+
+
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-branding" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <img src="assets/logo_daewoo.png" alt="Daewoo E&C Vina" class="logo-img">
+            </div>
+            <div class="header-right">
+
+                <button class="icon-btn dark" onclick="toggleSyncPanel()" title="Đồng bộ Google Sheets"><i class="ph ph-arrows-clockwise"></i></button>
+                <button class="icon-btn dark"><i class="ph ph-bell"></i></button>
+                <img src="https://i.pravatar.cc/150?u=admin" alt="User" class="avatar">
+            </div>
+
+        </header>
+
+        <div style="height: 12px;"></div>
+
+        <!-- Sync Panel -->
+        <div id="sync-panel-container" class="sync-panel" style="display: none;">
+            <div class="sync-panel-header">
+                <div class="sync-panel-title">
+                    <i class="ph-fill ph-google-logo"></i>
+                    <span>Sync Google Sheets</span>
+                </div>
+                <div id="sync-badge" class="sync-status-badge disconnected">
+                    <div class="dot"></div>
+                    <span id="sync-badge-text">Disconnected</span>
+                </div>
+            </div>
+            
+            <div class="sync-url-row">
+                <input type="text" id="sync-url-input" placeholder="Dán link Google Sheet tại đây..." readonly>
+                <button class="sync-action-btn" id="edit-sync-btn" onclick="toggleEditSync()" title="Sửa"><i class="ph ph-pencil-simple"></i></button>
+                <div id="sync-actions" style="display: none; gap: 8px;">
+                    <button class="sync-btn" id="sync-btn" onclick="syncFromSheet()">
+                        <i class="ph ph-arrows-clockwise"></i> Sync
+                    </button>
+                    <button class="sync-action-btn delete" onclick="deleteSyncUrl()" title="Xóa kết nối"><i class="ph ph-trash"></i></button>
+                </div>
+
+            </div>
+            
+            <div class="sync-info">
+                <i class="ph ph-info"></i>
+                <span id="sync-info-text">Enter Sheet URL to automatically sync data.</span>
+            </div>
+        </div>
+
+
+        <!-- ==================== SEARCH & FILTERS ==================== -->
+        <div class="section-header" style="padding-top: 8px;">
+            <h2 class="section-title" style="font-size: 15px;">Asset List</h2>
+            <span class="view-all" id="filtered-count">0 items</span>
+        </div>
+
+        <div style="padding: 0 20px 12px;">
+            <div class="glass-input-wrapper" style="background: white; border: 1px solid #E5E7EB; box-shadow: none; border-radius: 14px;">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="Tìm tài sản, mã số, seri...">
+            </div>
+        </div>
+
+        <div class="category-slider" id="category-chips"></div>
+
+        <!-- ==================== ASSET LIST ==================== -->
+        <div class="asset-scroll-container" id="asset-list"></div>
+
+        <!-- ==================== DELETE BUTTON ==================== -->
+        <div style="padding: 24px 20px; text-align: center;">
+            <button id="btn-delete-all" onclick="openDeleteModal()" style="
+                display: inline-flex; align-items: center; gap: 10px;
+                padding: 14px 28px; border-radius: 14px; border: none;
+                background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+                color: #DC2626; font-size: 15px; font-weight: 600;
+                cursor: pointer; transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+                font-family: 'Inter', sans-serif;
+            ">
+                <i class="ph ph-trash" style="font-size: 20px;"></i>
+                Xóa danh sách tài sản
+            </button>
+        </div>
+
+        <!-- ==================== DELETE MODAL ==================== -->
+        <div id="delete-modal-overlay" style="
+            display: none; position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center; padding: 20px;
+        ">
+            <div style="
+                background: white; border-radius: 20px; padding: 32px 24px;
+                max-width: 340px; width: 100%; text-align: center;
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+                animation: modalSlideUp 0.3s ease;
+            ">
+                <div style="
+                    width: 64px; height: 64px; border-radius: 50%;
+                    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+                    display: flex; align-items: center; justify-content: center;
+                    margin: 0 auto 20px;
+                "><i class="ph ph-warning" style="font-size: 32px; color: #DC2626;"></i></div>
+                <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #111827;">Xóa toàn bộ tài sản?</h3>
+                <p style="margin: 0 0 24px; font-size: 14px; color: #6B7280; line-height: 1.6;">
+                    Hành động này sẽ xóa <strong id="delete-count" style="color: #DC2626;">0</strong> tài sản. Không thể hoàn tác.
+                </p>
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="closeDeleteModal()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #E5E7EB;background:white;font-size:15px;font-weight:600;color:#374151;cursor:pointer;font-family:'Inter',sans-serif;">Hủy</button>
+                    <button onclick="confirmDeleteAll()" style="flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#EF4444,#DC2626);font-size:15px;font-weight:600;color:white;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 4px 12px rgba(220,38,38,0.3);">Xóa tất cả</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM NAV ==================== -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item active">
+                <i class="ph ph-package"></i><span>Assets</span>
+            </a>
+            <a href="dashboard.html" class="nav-item">
+                <i class="ph ph-chart-pie"></i><span>Dashboard</span>
+            </a>
+            <button class="fab" onclick="window.location.href='add-asset.html'">
+                <i class="ph ph-plus"></i>
+            </button>
+            <a href="directory.html" class="nav-item">
+                <i class="ph ph-users-three"></i><span>Contact</span>
+            </a>
+            <a href="import-gsheet.html" class="nav-item">
+                <i class="ph ph-file-arrow-up"></i><span>Import</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script>
+        // ===================== DATA =====================
+        let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+        let activeFilters = { search: '', category: null };
+
+        // ===================== SYSTEM FIELDS (for auto-mapping) =====================
+        const systemFields = [
+            { id: "assetCode", key: "code", aliases: ["code", "asset code", "mã tài sản", "ma tai san", "số thẻ", "so the"] },
+            { id: "assetName", key: "name", aliases: ["name", "asset name", "tên tài sản", "ten tai san", "tài sản"] },
+            { id: "model", key: "model", aliases: ["model", "spec", "specification", "thông số"] },
+            { id: "serialNo", key: "serialNo", aliases: ["serial", "serial number", "serial no", "số serial", "số sê ri"] },
+            { id: "assetType", key: "asset", aliases: ["asset", "type", "asset type", "loại", "loại tài sản", "danh mục"] },
+            { id: "manufacturer", key: "manufacturer", aliases: ["manufacturer", "hãng", "nhà sản xuất"] },
+            { id: "acquisitionDate", key: "acquisitionDate", aliases: ["acquisition date", "date", "ngày mua", "ngay mua"] },
+            { id: "quantity", key: "quantity", aliases: ["quantity", "qty", "số lượng", "so luong"] },
+            { id: "totalAmount", key: "totalAmount", aliases: ["total amount", "amount", "total", "nguyên giá", "nguyen gia", "giá trị", "original cost", "val", "giá mua"] },
+            { id: "month", key: "month", aliases: ["month", "months", "tháng", "thời gian sử dụng"] },
+            { id: "remainingValue", key: "remainingValue", aliases: ["remaining value", "remaining", "giá trị còn lại", "gia tri con lai", "net book value"] },
+            { id: "usingPurpose", key: "usingPurpose", aliases: ["using purpose", "purpose", "mục đích sử dụng"] },
+            { id: "suppliers", key: "suppliers", aliases: ["supplier", "suppliers", "nhà cung cấp"] },
+            { id: "status", key: "status", aliases: ["status", "trạng thái", "trang thai", "tình trạng"] },
+            { id: "location", key: "location", aliases: ["location", "vị trí", "vi tri", "nơi sử dụng"] },
+            { id: "assetAttribution", key: "attribution", aliases: ["attribution", "asset attribution", "asset distribution", "distribution", "phân loại", "phân bổ", "phan loai", "phan bo"] },
+
+            { id: "image", key: "image", aliases: ["image", "photo", "picture", "img", "hình ảnh", "ảnh", "refer picture", "ảnh tham chiếu", "anh"] }
+        ];
+
+        // ===================== INIT =====================
+        window.onload = function() {
+            renderPage();
+        };
+
+        // Parse numbers that may use Vietnamese format (dots as thousands separators)
+        // e.g. "1.500.000" = 1500000, "3,625" = 3625, "1500000" = 1500000
+        function parseVNNumber(val) {
+            if (val === null || val === undefined) return 0;
+            if (typeof val === 'number') return val;
+            let s = String(val).trim();
+            // Remove currency symbols, spaces
+            s = s.replace(/[₫đ$VND\s]/gi, '');
+            // If contains multiple dots (e.g. "1.500.000"), dots are thousands separators
+            const dotCount = (s.match(/\./g) || []).length;
+            if (dotCount > 1) {
+                // All dots are thousands separators, remove them
+                s = s.replace(/\./g, '');
+                // Comma might be decimal separator
+                s = s.replace(',', '.');
+            } else if (dotCount === 1 && s.includes(',')) {
+                // "1.500,50" format: dot=thousands, comma=decimal
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else if (dotCount === 1) {
+                // Single dot: check if it's thousands separator
+                // "1.500" with 3 digits after dot => thousands separator
+                const parts = s.split('.');
+                if (parts[1] && parts[1].length === 3 && !s.includes(',')) {
+                    s = s.replace('.', ''); // thousands separator
+                }
+                // else it's a decimal point, leave as is
+            } else {
+                // No dots, just commas or plain number
+                s = s.replace(/,/g, '');
+            }
+            s = s.replace(/[^0-9.-]/g, '');
+            return parseFloat(s) || 0;
+        }
+
+        function renderPage() {
+            assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+            renderCategories();
+            renderAssets();
+        }
+
+        // ===================== HERO =====================
+        function updateHero() {
+            let totalVal = 0;
+            assets.forEach(a => {
+                totalVal += parseVNNumber(a.totalAmount || a.originalCost || a.price || 0);
+            });
+            const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+            document.getElementById('hero-total-value').textContent = fmt.format(totalVal);
+            document.getElementById('hero-asset-count').textContent = assets.length;
+            // Simple trend (just display asset growth)
+            document.getElementById('hero-trend').textContent = assets.length > 0 ? '+' + assets.length : '0';
+        }
+
+        // ===================== MINI STATS =====================
+        function updateMiniStats() {
+            let inUse = 0, sale = 0, loss = 0;
+            assets.forEach(a => {
+                const s = (a.status || '').toLowerCase();
+                if (s.includes('dispose') || s.includes('thanh lý') || s.includes('liquidated')) sale++;
+                else if (s.includes('loss') || s.includes('mất') || s.includes('hỏng') || s.includes('other') || s.includes('khác')) loss++;
+                else inUse++;
+            });
+            document.getElementById('stat-in-use').textContent = inUse;
+            document.getElementById('stat-sale').textContent = sale;
+            document.getElementById('stat-loss').textContent = loss;
+        }
+
+        // ===================== DONUT CHART =====================
+        function renderDonut() {
+            const svg = document.getElementById('donut-chart');
+            const legend = document.getElementById('donut-legend');
+            svg.innerHTML = ''; legend.innerHTML = '';
+            const total = assets.length;
+            document.getElementById('donut-total').textContent = total >= 1000 ? (total/1000).toFixed(1) + 'k' : total;
+
+            if (total === 0) {
+                svg.innerHTML = '<circle cx="18" cy="18" r="15.915" fill="none" stroke="#F3F4F6" stroke-width="10"></circle>';
+                return;
+            }
+
+            const colors = ['#2563EB', '#F59E0B', '#10B981', '#818CF8', '#EC4899', '#6366F1', '#F43F5E'];
+            const catMap = {};
+            assets.forEach(a => {
+                const cat = a.asset || a.type || 'Khác';
+                catMap[cat] = (catMap[cat] || 0) + 1;
+            });
+
+            const sorted = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+            const categories = {};
+            sorted.forEach(([cat, count], i) => {
+                if (i < 5) categories[cat] = { count, color: colors[i] };
+                else {
+                    if (!categories['Khác']) categories['Khác'] = { count: 0, color: '#9CA3AF' };
+                    categories['Khác'].count += count;
+                }
+            });
+
+            let cum = 0;
+            Object.entries(categories).forEach(([name, { count, color }]) => {
+                if (count === 0) return;
+                const pct = (count / total) * 100;
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", "18"); circle.setAttribute("cy", "18");
+                circle.setAttribute("r", "15.915");
+                circle.setAttribute("class", "donut-segment");
+                circle.setAttribute("stroke", color);
+                circle.setAttribute("stroke-dasharray", `${pct} ${100-pct}`);
+                circle.setAttribute("stroke-dashoffset", (100 - cum).toString());
+                svg.appendChild(circle);
+                cum += pct;
+
+                legend.innerHTML += `
+                    <div class="legend-row">
+                        <div class="legend-row-left"><div class="legend-color" style="background:${color}"></div>${name}</div>
+                        <div class="legend-pct">${Math.round(pct)}%</div>
+                    </div>`;
+            });
+        }
+
+        // ===================== LINE CHART =====================
+        function renderLineChart() {
+            let remainingVal = 0;
+            assets.forEach(a => {
+                remainingVal += parseVNNumber(a.remainingValue || 0);
+            });
+            const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+            document.getElementById('remaining-val').textContent = fmt.format(remainingVal);
+
+            // Generate curve
+            const pts = [{x:0,y:25},{x:15,y:18},{x:35,y:28},{x:55,y:14},{x:75,y:35},{x:90,y:22},{x:100,y:8}];
+            let d = `M ${pts[0].x} ${pts[0].y}`;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const mx = (pts[i].x + pts[i+1].x) / 2;
+                d += ` C ${mx} ${pts[i].y}, ${mx} ${pts[i+1].y}, ${pts[i+1].x} ${pts[i+1].y}`;
+            }
+            document.getElementById('line-path').setAttribute('d', d);
+            document.getElementById('line-fill').setAttribute('d', d + ' L 100 40 L 0 40 Z');
+        }
+
+        // ===================== CATEGORIES =====================
+        function renderCategories() {
+            const container = document.getElementById('category-chips');
+            const cats = [...new Set(assets.map(a => a.asset || a.type))].filter(Boolean);
+            container.innerHTML = '';
+            cats.forEach(cat => {
+                const chip = document.createElement('div');
+                chip.className = `cat-chip ${activeFilters.category === cat ? 'active' : ''}`;
+                chip.innerHTML = `<i class="ph ph-tag"></i> ${cat}`;
+                chip.onclick = () => {
+                    activeFilters.category = activeFilters.category === cat ? null : cat;
+                    renderCategories();
+                    filterAndRender();
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        // ===================== ASSET LIST =====================
+        function fixDriveImageUrl(url) {
+            if (!url || typeof url !== 'string') return null;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) return null;
+            if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+                const dMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                const idMatch = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                const id = (dMatch && dMatch[1]) || (idMatch && idMatch[1]);
+                if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w400`;
+            }
+            return url;
+        }
+
+        function renderAssets(items) {
+            if (!items) items = assets;
+            const container = document.getElementById('asset-list');
+            const countLabel = document.getElementById('filtered-count');
+            if (countLabel) countLabel.textContent = `${items.length} tài sản`;
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+                    <i class="ph ph-magnifying-glass" style="font-size:48px;margin-bottom:20px;opacity:0.3;"></i>
+                    <p>Không tìm thấy tài sản nào.</p></div>`;
+                return;
+            }
+
+            items.forEach(asset => {
+                const fixedUrl = fixDriveImageUrl(asset.image);
+                const sRaw = (asset.status || '').toLowerCase();
+                const isDispose = sRaw.includes('dispose') || sRaw.includes('thanh lý') || sRaw.includes('liquidated');
+                const isInUse = sRaw.includes('in-use') || sRaw.includes('inuse') || sRaw.includes('use') || sRaw.includes('active') || sRaw.includes('available') || !sRaw;
+                const statusClass = isInUse && !isDispose ? 'status-active' : (isDispose ? 'status-liquidated' : 'status-out');
+                const statusText = isDispose ? 'DISPOSE' : (isInUse ? 'IN USE' : (asset.status || 'OTHER').toUpperCase());
+
+                const card = document.createElement('div');
+                card.className = 'premium-card';
+                card.onclick = () => {
+                    localStorage.setItem('currentViewAsset', asset.code || asset.id);
+                    window.location.href = 'details.html';
+                };
+                card.innerHTML = `
+                    <div class="card-img-box">
+                        ${fixedUrl
+                            ? `<img src="${fixedUrl}" alt="${asset.name}" onerror="this.src='https://images.unsplash.com/photo-1558655146-d09347e92766?w=200&h=200&fit=crop'">`
+                            : `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--primary-color);font-size:32px;"><i class="ph ph-cube"></i></div>`}
+                    </div>
+                    <div class="card-content">
+                        <div class="card-top">
+                            <span class="card-status ${statusClass}">${statusText}</span>
+                            <span style="font-size: 10px; font-weight: 700; color: #6B7280; background: #F3F4F6; padding: 2px 8px; border-radius: 4px; margin-left: auto;">${asset.code || 'NO-CODE'}</span>
+                        </div>
+                        <h3 class="card-name">${asset.name || 'Unnamed Asset'}</h3>
+                        <p class="card-meta">${asset.asset || asset.type || 'General'} • ${asset.location || 'Storage'}</p>
+                        <div class="card-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <div class="card-price">${'₫' + parseVNNumber(asset.totalAmount || asset.originalCost || asset.price || 0).toLocaleString('vi-VN')}</div>
+                            <div style="font-size: 10px; color: #9CA3AF; font-weight: 500;">${asset.attribution || ''}</div>
+                        </div>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function filterAndRender() {
+            const filtered = assets.filter(a => {
+                const s = activeFilters.search.toLowerCase();
+                const sm = !s || 
+                           (a.name && a.name.toLowerCase().includes(s)) || 
+                           (a.code && a.code.toLowerCase().includes(s)) || 
+                           (a.serialNo && a.serialNo.toLowerCase().includes(s)) ||
+                           (a.attribution && a.attribution.toLowerCase().includes(s));
+                const cm = !activeFilters.category || (a.asset || a.type) === activeFilters.category;
+                return sm && cm;
+            });
+            renderAssets(filtered);
+        }
+
+        document.getElementById('search-input').addEventListener('input', e => {
+            activeFilters.search = e.target.value;
+            filterAndRender();
+        });
+
+        // ===================== DELETE =====================
+        function openDeleteModal() {
+            document.getElementById('delete-count').textContent = assets.length;
+            document.getElementById('delete-modal-overlay').style.display = 'flex';
+        }
+        function closeDeleteModal() {
+            document.getElementById('delete-modal-overlay').style.display = 'none';
+        }
+        function confirmDeleteAll() {
+            localStorage.removeItem('myAssets');
+            localStorage.removeItem('currentViewAsset');
+            location.reload();
+        }
+        document.getElementById('delete-modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
+        });
+
+        // ===================== GOOGLE SHEETS SYNC =====================
+        // JSONP setup (reuse from import-gsheet logic)
+        window.google = window.google || {};
+        window.google.visualization = window.google.visualization || {};
+        window.google.visualization.Query = window.google.visualization.Query || {};
+        window.google.visualization.Query.setResponse = function(response) {
+            if (window.jsonpResolve) window.jsonpResolve(response);
+        };
+
+        async function fetchViaJSONP(sheetId, isPublished) {
+            return new Promise((resolve, reject) => {
+                const baseUrl = isPublished
+                    ? `https://docs.google.com/spreadsheets/d/e/${sheetId}/gviz/tq`
+                    : `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq`;
+                const script = document.createElement('script');
+                script.src = `${baseUrl}?tqx=out:json;responseHandler:google.visualization.Query.setResponse`;
+                window.jsonpResolve = (response) => {
+                    cleanup();
+                    if (response.status === 'error') reject(new Error("Google Sheets error"));
+                    else {
+                        const cols = response.table.cols;
+                        const rows = response.table.rows.map(r => r.c.map(cell => cell ? (cell.v || cell.f || "") : ""));
+                        resolve([cols.map(c => c.label || ""), ...rows]);
+                    }
+                };
+                script.onerror = () => { cleanup(); reject(new Error("JSONP failed")); };
+                function cleanup() { if (script.parentNode) script.parentNode.removeChild(script); delete window.jsonpResolve; }
+                document.body.appendChild(script);
+                setTimeout(() => { cleanup(); reject(new Error("Timeout")); }, 10000);
+            });
+        }
+
+        function transformDriveUrl(url) {
+            if (!url || typeof url !== 'string') return url;
+            if (url.includes('drive.google.com')) {
+                const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                const m2 = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                const id = (m && m[1]) || (m2 && m2[1]);
+                if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+            }
+            return url;
+        }
+
+        function toggleSyncPanel() {
+            const p = document.getElementById('sync-panel-container');
+            p.style.display = p.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function syncFromSheet(silent = false) {
+
+            const urlInput = document.getElementById('sync-url-input');
+            const url = urlInput.value.trim();
+            if (!url) {
+                if (!silent) alert('Vui lòng nhập URL Google Sheet.');
+                return;
+            }
+
+            // Check if URL is a Drive file (not a Sheet)
+            if (url.includes('drive.google.com/file/') || url.includes('drive.google.com/open')) {
+                if (!silent) {
+                    badge.className = 'sync-status-badge disconnected';
+                    badgeText.textContent = 'Lỗi URL';
+                    infoText.textContent = 'Đây là link file/ảnh Drive, không phải Google Sheet. Hãy dán link spreadsheet (docs.google.com/spreadsheets/...).';
+                }
+                return;
+            }
+
+            // Must be a Google Sheets URL
+            if (!url.includes('docs.google.com/spreadsheets')) {
+                if (!silent) {
+                    badge.className = 'sync-status-badge disconnected';
+                    badgeText.textContent = 'Lỗi URL';
+                    infoText.textContent = 'URL phải là Google Sheets (docs.google.com/spreadsheets/...).';
+                }
+                return;
+            }
+
+            const match = url.match(/\/d\/(e\/)?([a-zA-Z0-9-_]+)/);
+            if (!match) {
+                if (!silent) alert('URL không hợp lệ.');
+                return;
+            }
+
+            // Save URL
+            localStorage.setItem('syncSheetUrl', url);
+
+            const isPublished = !!match[1];
+            const sheetId = match[2];
+            const csvUrl = isPublished
+                ? `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?output=csv`
+                : `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+            const exportUrl = isPublished ? csvUrl : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+            const btn = document.getElementById('sync-btn');
+            const badge = document.getElementById('sync-badge');
+            const badgeText = document.getElementById('sync-badge-text');
+            const infoText = document.getElementById('sync-info-text');
+            const btnIcon = btn.querySelector('i');
+
+            btn.disabled = true;
+            btnIcon.className = 'ph ph-arrows-clockwise spinning';
+            infoText.textContent = 'Đang đồng bộ...';
+
+            async function tryFetch(u) {
+                const r = await fetch(u);
+                if (!r.ok) throw new Error(`Status ${r.status}`);
+                return await r.text();
+            }
+
+            try {
+                let json;
+                try {
+                    let csv;
+                    try { csv = await tryFetch(csvUrl); }
+                    catch { csv = await tryFetch(exportUrl); }
+                    const wb = XLSX.read(csv, { type: 'string' });
+                    json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+                } catch {
+                    try {
+                        const proxy = `https://corsproxy.io/?${encodeURIComponent(csvUrl)}`;
+                        const res = await fetch(proxy);
+                        if (!res.ok) throw new Error();
+                        const csv = await res.text();
+                        const wb = XLSX.read(csv, { type: 'string' });
+                        json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+                    } catch {
+                        try {
+                            const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl)}`;
+                            const res = await fetch(proxy);
+                            if (!res.ok) throw new Error();
+                            const csv = await res.text();
+                            const wb = XLSX.read(csv, { type: 'string' });
+                            json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+                        } catch {
+                            json = await fetchViaJSONP(sheetId, isPublished);
+                        }
+                    }
+                }
+
+                if (!json || json.length < 2) throw new Error('Sheet trống.');
+
+                // Find header row
+                let headerIndex = -1;
+                for (let i = 0; i < Math.min(json.length, 20); i++) {
+                    const row = json[i] || [];
+                    if (row.filter(c => c !== undefined && c !== null && c.toString().trim() !== '').length > 0) {
+                        headerIndex = i; break;
+                    }
+                }
+                if (headerIndex === -1) throw new Error('Không tìm thấy header.');
+
+                const headers = json[headerIndex];
+                // Filter rows that have at least one cell with content
+                const rows = json.slice(headerIndex + 1).filter(r => 
+                    r && r.some(c => c !== undefined && c !== null && c.toString().trim() !== '')
+                );
+
+                // Auto-map columns (Two-pass for accuracy)
+                const mappings = {};
+                const usedCols = new Set();
+
+                // Pass 1: Exact matches or priority matches
+                systemFields.forEach(field => {
+                    const aliases = field.aliases.map(a => a.toLowerCase());
+                    headers.forEach((h, idx) => {
+                        if (!h || usedCols.has(idx)) return;
+                        const hl = h.toString().toLowerCase().trim();
+                        // Priority check for 'refer picture' for the image field
+                        if (hl === 'refer picture' && field.id === 'image') {
+                            mappings[field.id] = idx; usedCols.add(idx); return;
+                        }
+                        // Exact match in aliases
+                        if (aliases.includes(hl)) {
+                            mappings[field.id] = idx; usedCols.add(idx);
+                        }
+                    });
+                });
+
+                // Pass 2: Partial matches for unmapped fields
+                systemFields.forEach(field => {
+                    if (mappings[field.id] !== undefined) return;
+                    const aliases = field.aliases.map(a => a.toLowerCase());
+                    headers.forEach((h, idx) => {
+                        if (!h || usedCols.has(idx)) return;
+                        const hl = h.toString().toLowerCase().trim();
+                        if (aliases.some(a => hl.includes(a))) {
+                            mappings[field.id] = idx; usedCols.add(idx);
+                        }
+                    });
+                });
+
+                // Build assets
+                const newAssets = rows.map(row => {
+                    const asset = {};
+                    systemFields.forEach(field => {
+                        const colIndex = mappings[field.id];
+                        if (colIndex !== undefined && row[colIndex] !== undefined) {
+                            let val = row[colIndex];
+                            if (field.id === 'image') val = transformDriveUrl(val);
+                            asset[field.key] = val;
+                        }
+                    });
+                    if (!asset.code) asset.code = `AST-SYNC-${Math.floor(Math.random()*100000)}`;
+                    if (!asset.name) asset.name = 'Imported Asset';
+                    if (!asset.status) asset.status = 'available';
+                    if (!asset.location) asset.location = 'Unassigned';
+                    return asset;
+                });
+
+                // Save
+                localStorage.setItem('myAssets', JSON.stringify(newAssets));
+
+                // Update UI
+                document.getElementById('sync-actions').style.display = 'flex';
+                document.getElementById('sync-url-input').readOnly = true;
+                badge.className = 'sync-status-badge connected';
+                badgeText.textContent = 'Đã kết nối';
+                const now = new Date();
+                const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+                infoText.textContent = `Đồng bộ thành công ${newAssets.length} tài sản lúc ${timeStr}`;
+                localStorage.setItem('lastSyncTime', now.toISOString());
+
+                renderPage();
+
+            } catch (err) {
+                console.error('Sync error:', err);
+                badge.className = 'sync-status-badge disconnected';
+                badgeText.textContent = 'Lỗi';
+                infoText.textContent = silent ? 'Đồng bộ tự động thất bại. Nhấn Đồng bộ để thử lại.' : 'Lỗi: ' + err.message;
+            } finally {
+                btn.disabled = false;
+                btnIcon.className = 'ph ph-arrows-clockwise';
+            }
+        }
+
+        // Restore last sync status on load
+        (function() {
+            const lastSync = localStorage.getItem('lastSyncTime');
+            const savedUrl = localStorage.getItem('syncSheetUrl');
+            if (savedUrl) {
+                document.getElementById('sync-url-input').value = savedUrl;
+                document.getElementById('sync-actions').style.display = 'flex';
+                if (lastSync) {
+                    const d = new Date(lastSync);
+                    document.getElementById('sync-badge').className = 'sync-status-badge connected';
+                    document.getElementById('sync-badge-text').textContent = 'Đã kết nối';
+                    document.getElementById('sync-info-text').textContent = `Lần đồng bộ cuối: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} ${d.toLocaleDateString('vi-VN')}`;
+                }
+            }
+
+        })();
+
+        function toggleEditSync() {
+            const input = document.getElementById('sync-url-input');
+            const editBtn = document.getElementById('edit-sync-btn');
+            const isReadOnly = input.readOnly;
+            
+            if (isReadOnly) {
+                input.readOnly = false;
+                input.focus();
+                editBtn.innerHTML = '<i class="ph ph-check"></i>';
+                editBtn.style.color = '#059669';
+                editBtn.style.borderColor = '#10B981';
+                editBtn.title = "Lưu";
+            } else {
+                input.readOnly = true;
+                editBtn.innerHTML = '<i class="ph ph-pencil-simple"></i>';
+                editBtn.style.color = '';
+                editBtn.style.borderColor = '';
+                editBtn.title = "Sửa";
+                localStorage.setItem('syncSheetUrl', input.value.trim());
+            }
+        }
+
+        function deleteSyncUrl() {
+            if (confirm('Bạn có chắc muốn xóa cấu hình đồng bộ này?')) {
+                localStorage.removeItem('syncSheetUrl');
+                localStorage.removeItem('lastSyncTime');
+                document.getElementById('sync-url-input').value = '';
+                document.getElementById('sync-url-input').readOnly = false;
+                document.getElementById('sync-actions').style.display = 'none';
+                document.getElementById('sync-badge').className = 'sync-status-badge disconnected';
+                document.getElementById('sync-badge-text').textContent = 'Chưa kết nối';
+                document.getElementById('sync-info-text').textContent = 'Nhập URL Sheet để tự động đồng bộ dữ liệu.';
+            }
+        }
+
+        // ===================== DRAGGABLE FAB =====================
+        (function() {
+            const fab = document.querySelector('.fab');
+            if (!fab) return;
+
+            let isDragging = false;
+            let startX, startY, initialRight, initialBottom;
+            const threshold = 5; // pixels to distinguish click from drag
+
+            // Load saved position
+            const savedPos = JSON.parse(localStorage.getItem('fabPosition') || 'null');
+            if (savedPos) {
+                fab.style.right = savedPos.right;
+                fab.style.bottom = savedPos.bottom;
+                fab.style.left = 'auto'; // Ensure right/bottom take precedence
+                fab.style.top = 'auto';
+            }
+
+            function onStart(e) {
+                isDragging = false;
+                const touch = e.type === 'touchstart' ? e.touches[0] : e;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                const rect = fab.getBoundingClientRect();
+                initialRight = window.innerWidth - rect.right;
+                initialBottom = window.innerHeight - rect.bottom;
+                
+                fab.style.transition = 'none'; // Disable transition during drag
+                
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('touchend', onEnd);
+            }
+
+            function onMove(e) {
+                const touch = e.type === 'touchmove' ? e.touches[0] : e;
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+
+                if (!isDragging && (Math.abs(dx) > threshold || Math.abs(dy) > threshold)) {
+                    isDragging = true;
+                }
+
+                if (isDragging) {
+                    if (e.cancelable) e.preventDefault();
+                    
+                    let newRight = initialRight - dx;
+                    let newBottom = initialBottom - dy;
+
+                    // Keep within viewport
+                    const padding = 10;
+                    const fabSize = 56;
+                    newRight = Math.max(padding, Math.min(newRight, window.innerWidth - fabSize - padding));
+                    newBottom = Math.max(padding, Math.min(newBottom, window.innerHeight - fabSize - padding));
+
+                    fab.style.right = newRight + 'px';
+                    fab.style.bottom = newBottom + 'px';
+                    fab.style.left = 'auto';
+                    fab.style.top = 'auto';
+                }
+            }
+
+            function onEnd() {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onEnd);
+
+                if (isDragging) {
+                    // Prevent click event
+                    fab.addEventListener('click', captureClick, true);
+                    setTimeout(() => fab.removeEventListener('click', captureClick, true), 1);
+                    
+                    // Save position
+                    localStorage.setItem('fabPosition', JSON.stringify({
+                        right: fab.style.right,
+                        bottom: fab.style.bottom
+                    }));
+                }
+                fab.style.transition = 'transform 0.2s'; // Restore transition
+            }
+
+            function captureClick(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+
+            fab.addEventListener('mousedown', onStart);
+            fab.addEventListener('touchstart', onStart, { passive: true });
+        })();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Contact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #F8F9FB;">
+    <div class="app-container has-fixed-bottom">
+        <!-- Header -->
+        <header class="header contact-header">
+            <a href="directory.html" class="icon-btn dark contact-header-left"><i class="ph ph-arrow-left"></i></a>
+            <h1>Add Contact</h1>
+        </header>
+
+        <!-- Profile Photo Area -->
+        <div class="profile-photo-container">
+            <div class="photo-wrapper">
+                <div class="photo-upload-circle">
+                    <!-- The ::after element handles the white square placeholder -->
+                </div>
+                <button class="photo-badge-btn">
+                    <i class="ph-fill ph-pencil-simple"></i>
+                </button>
+            </div>
+            <h2 class="upload-text-title">Upload Photo</h2>
+            <p class="upload-text-subtitle">Tap to change</p>
+        </div>
+
+        <!-- Form fields -->
+        <div class="form-container" style="padding-top: 0;">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-user" style="color: #6B7280;"></i>
+                    <input type="text" class="form-input" id="add-name" placeholder="e.g. Alex Johnson">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Job Title</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-briefcase" style="color: #6B7280;"></i>
+                    <input type="text" class="form-input" id="add-title" placeholder="e.g. Product Designer">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Department</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-buildings" style="color: #6B7280;"></i>
+                    <input type="text" class="form-input" id="add-department" placeholder="e.g. Creative Team">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-phone" style="color: #6B7280;"></i>
+                    <input type="tel" class="form-input" id="add-phone" placeholder="+1 (555) 000-0000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-envelope-simple" style="color: #6B7280;"></i>
+                    <input type="email" class="form-input" id="add-email" placeholder="alex@example.com">
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Bottom Button -->
+        <div class="fixed-bottom-action">
+            <button class="btn-primary-blue" onclick="saveContact()">
+                <i class="ph-fill ph-floppy-disk"></i> Save Contact
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function saveContact() {
+            const name = document.getElementById('add-name').value;
+            const title = document.getElementById('add-title').value;
+            const department = document.getElementById('add-department').value;
+            const phone = document.getElementById('add-phone').value;
+            const email = document.getElementById('add-email').value;
+
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            
+            // Generate a new ID (highest ID + 1)
+            const newId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) + 1 : 1;
+
+            const newContact = {
+                id: newId,
+                name: name,
+                title: title,
+                department: department,
+                phone: phone,
+                email: email,
+                image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" // Default generated avatar
+            };
+
+            contacts.push(newContact);
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            
+            window.location.href = 'directory.html';
+        }
+    </script>
+</body>
+</html>

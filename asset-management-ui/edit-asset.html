@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Asset</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray">
+    <div class="app-container import-app">
+        <!-- Header -->
+        <header class="header import-header flex-center-header">
+            <div class="header-left">
+                <a href="details.html" class="icon-btn dark"><i class="ph ph-arrow-left"></i></a>
+                <div class="logo-branding" style="margin-left: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+                    <img src="assets/logo_daewoo.png" alt="Daewoo E&C Vina" class="logo-img" style="height: 24px;">
+                </div>
+                <div class="header-divider"></div>
+                <h1 class="header-page-title">Edit Asset</h1>
+
+            </div>
+
+            <div class="header-right actions" style="margin-top: 0;">
+                <a href="details.html" class="cancel-link">Cancel</a>
+                <button type="submit" form="edit-asset-form" class="btn btn-primary btn-sm">Save Changes</button>
+            </div>
+        </header>
+
+        <form id="edit-asset-form" onsubmit="handleEditSubmit(event)" class="edit-content">
+            
+            <!-- SECTION: ASSET MEDIA -->
+            <div class="edit-section-card">
+                <h3 class="section-heading">ASSET MEDIA</h3>
+                <div class="media-preview-box" id="media-preview">
+                    <img id="edit-image-preview" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800" alt="Asset">
+                </div>
+                <div class="media-actions">
+                    <input type="file" id="edit-image-input" accept="image/*" style="display:none;" onchange="handleEditImageSelect(event)">
+                    <button type="button" class="btn btn-secondary media-btn" onclick="document.getElementById('edit-image-input').click()"><i class="ph-fill ph-camera"></i> Change Image</button>
+                    <p class="media-hint">Supported formats: JPG, PNG. Max size 5MB.</p>
+                </div>
+            </div>
+
+            <!-- SECTION: IDENTIFICATION & GENERAL INFO -->
+            <div class="edit-section-card">
+                <h3 class="section-heading">IDENTIFICATION & GENERAL INFO</h3>
+                <div class="form-list">
+                    <div class="form-block">
+                        <label class="form-label">Asset Code (Primary Key)</label>
+                        <input type="text" id="edit-code" class="form-input" disabled>
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Asset Name</label>
+                        <input type="text" id="edit-name" class="form-input">
+                    </div>
+
+                    <div class="form-block">
+                        <label class="form-label">Manufacturer</label>
+                        <input type="text" id="edit-manufacturer" class="form-input">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Model/Specification</label>
+                        <input type="text" id="edit-model" class="form-input">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Serial Number</label>
+                        <input type="text" id="edit-serial" class="form-input">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Distribution (Phân bổ)</label>
+                        <input type="text" id="edit-attribution" class="form-input">
+                    </div>
+
+                    <div class="form-block">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" id="edit-quantity" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: STATUS & USAGE -->
+            <div class="edit-section-card">
+                <h3 class="section-heading">STATUS & USAGE</h3>
+                <div class="form-list">
+                    <div class="form-block">
+                        <label class="form-label">Status</label>
+                        <select id="edit-status" class="form-select">
+                            <option value="available">Available</option>
+                            <option value="in-use">In Use</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="dispose">Dispose</option>
+                        </select>
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Asset</label>
+                        <select id="edit-type" class="form-select">
+                            <option value="Asset On Book">Asset On Book (AOB)</option>
+                            <option value="Asset Out of Book">Asset Out of Book (OOB)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-block">
+                        <label class="form-label">Purpose of Use</label>
+                        <input type="text" id="edit-purpose" class="form-input">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="edit-location" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: PROCUREMENT & FINANCIALS -->
+            <div class="edit-section-card">
+                <h3 class="section-heading">PROCUREMENT & FINANCIALS</h3>
+                <div class="form-list">
+                    <div class="form-block">
+                        <label class="form-label">Supplier</label>
+                        <input type="text" id="edit-supplier" class="form-input">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Acquisition Date</label>
+                        <input type="date" id="edit-acquisition-date" class="form-input">
+                    </div>
+
+                    <div class="form-block">
+                        <label class="form-label">Original Cost</label>
+                        <input type="number" id="edit-total-amount" class="form-input" step="0.01">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Depreciation (Months)</label>
+                        <input type="number" id="edit-month" class="form-input">
+                    </div>
+                    <div class="form-block">
+                        <label class="form-label">Residual Value</label>
+                        <input type="number" id="edit-remaining" class="form-input" step="0.01">
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM ACTIONS -->
+            <div class="edit-footer-actions">
+                <button type="submit" class="btn btn-primary full-btn">Save Changes</button>
+                <button type="button" class="btn btn-secondary full-btn outline-subtle" onclick="window.location.href='details.html'">Discard Changes</button>
+            </div>
+            
+        </form>
+
+        <script>
+            let currentAsset = null;
+            let currentAssets = [];
+            let updatedImageData = null;
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const targetCode = localStorage.getItem('currentViewAsset');
+                currentAssets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+                
+                if (targetCode) {
+                    currentAsset = currentAssets.find(a => a.code === targetCode);
+                }
+
+                if (currentAsset) {
+                    populateEditForm(currentAsset);
+                }
+            });
+
+            function populateEditForm(asset) {
+                document.getElementById('edit-code').value = asset.code || '';
+                document.getElementById('edit-name').value = asset.name || '';
+                document.getElementById('edit-manufacturer').value = asset.manufacturer || '';
+                document.getElementById('edit-type').value = asset.asset || asset.assetType || asset.type || '';
+
+
+
+
+                document.getElementById('edit-model').value = asset.model || '';
+                document.getElementById('edit-serial').value = asset.serialNo || '';
+                document.getElementById('edit-attribution').value = asset.attribution || '';
+                document.getElementById('edit-quantity').value = asset.quantity || '';
+                document.getElementById('edit-status').value = asset.status || 'available';
+                document.getElementById('edit-purpose').value = asset.usingPurpose || '';
+                document.getElementById('edit-location').value = asset.location || '';
+                document.getElementById('edit-supplier').value = asset.suppliers || '';
+                document.getElementById('edit-total-amount').value = asset.totalAmount || '';
+                document.getElementById('edit-month').value = asset.month || '';
+                document.getElementById('edit-remaining').value = asset.remainingValue || '';
+                
+                if (asset.acquisitionDate) {
+                    let d;
+                    const val = asset.acquisitionDate;
+                    if (!isNaN(val) && val > 20000) {
+                        d = new Date((val - 25569) * 86400 * 1000);
+                    } else {
+                        d = new Date(val);
+                    }
+                    if (!isNaN(d.getTime())) {
+                        document.getElementById('edit-acquisition-date').value = d.toISOString().split('T')[0];
+                    }
+                }
+
+
+                if (asset.image) {
+                    document.getElementById('edit-image-preview').src = asset.image;
+                    updatedImageData = asset.image;
+                } else {
+                    document.getElementById('media-preview').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#F3F4F6;color:#9CA3AF;font-size:40px;"><i class="ph ph-cube"></i></div>';
+                }
+            }
+
+            function handleEditImageSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDimension = 800;
+
+                        if (width > height) {
+                            if (width > maxDimension) { height *= maxDimension / width; width = maxDimension; }
+                        } else {
+                            if (height > maxDimension) { width *= maxDimension / height; height = maxDimension; }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        updatedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                        document.getElementById('media-preview').innerHTML = `<img src="${updatedImageData}" style="width:100%; height:100%; object-fit:cover;">`;
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function handleEditSubmit(event) {
+                event.preventDefault();
+                const targetCode = localStorage.getItem('currentViewAsset');
+                if (!targetCode) return;
+
+                const idx = currentAssets.findIndex(a => a.code === targetCode);
+                if (idx !== -1) {
+                    currentAssets[idx] = {
+                        ...currentAssets[idx],
+                        name: document.getElementById('edit-name').value,
+                        manufacturer: document.getElementById('edit-manufacturer').value,
+                        asset: document.getElementById('edit-type').value,
+
+
+
+
+                        model: document.getElementById('edit-model').value,
+                        serialNo: document.getElementById('edit-serial').value,
+                        attribution: document.getElementById('edit-attribution').value,
+                        quantity: document.getElementById('edit-quantity').value,
+                        status: document.getElementById('edit-status').value,
+                        usingPurpose: document.getElementById('edit-purpose').value,
+                        location: document.getElementById('edit-location').value,
+                        suppliers: document.getElementById('edit-supplier').value,
+                        acquisitionDate: document.getElementById('edit-acquisition-date').value,
+                        totalAmount: document.getElementById('edit-total-amount').value,
+                        month: document.getElementById('edit-month').value,
+                        remainingValue: document.getElementById('edit-remaining').value,
+                        image: updatedImageData
+                    };
+
+
+                    try {
+                        localStorage.setItem('myAssets', JSON.stringify(currentAssets));
+                        alert('Asset updated successfully!');
+                        window.location.href = 'details.html';
+                    } catch (e) {
+                        alert('Error saving asset: Storage quota exceeded. Try using a smaller image.');
+                    }
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>

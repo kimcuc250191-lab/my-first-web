@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assets from Excel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray">
+    <div class="app-container import-app">
+        
+        <!-- Header -->
+        <header class="header import-header flex-center-header">
+            <div class="header-left">
+                <a href="add-asset.html" class="icon-btn dark"><i class="ph ph-arrow-left"></i></a>
+                <div class="logo-branding" style="margin-left: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+                    <img src="assets/logo_daewoo.png" alt="Daewoo E&C Vina" class="logo-img" style="height: 24px;">
+                </div>
+                <div class="header-titles" style="margin-left: 15px; border-left: 1px solid #eee; padding-left: 15px;">
+                    <h1 style="margin: 0; font-size: 14px;">Assets from Excel</h1>
+                    <span style="font-size: 10px;">Step 1 of 3: Upload & Map Fields</span>
+                </div>
+            </div>
+
+            <div class="header-right actions" style="margin-top: 0;">
+                <a href="add-asset.html" class="cancel-link">Cancel</a>
+                <button class="btn btn-primary btn-sm" onclick="submitImport()">Confirm Import</button>
+            </div>
+        </header>
+
+        <div class="import-content">
+            <!-- Progress Card -->
+            <div class="progress-card">
+                <div class="progress-text">
+                    <span class="progress-label">UPLOAD PROGRESS</span>
+                    <span id="progress-text" class="progress-value">0% Complete</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-icon"><i class="ph-fill ph-file"></i></div>
+                    <h2>1. Upload Excel File</h2>
+                </div>
+                <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" style="display: none;">
+                <div class="excel-upload-container bordered-box" id="drop-zone">
+                    <div class="box-icon"><i class="ph-fill ph-file-text"></i></div>
+                    <h3>Drag and drop your asset list</h3>
+                    <p class="upload-instructions" id="file-name-display">Support for .xlsx, .xls and .csv files.<br>Maximum file size 10MB.</p>
+                    <button type="button" class="btn btn-outline center-btn" onclick="document.getElementById('excel-file').click()">Browse Files</button>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-section">
+                <div class="step-header">
+                    <div class="step-icon"><i class="ph-fill ph-columns"></i></div>
+                    <h2>2. Column Mapping</h2>
+                </div>
+                
+                <div class="mapping-card patterned-card">
+                    <p class="mapping-instructions"><i>Match the Excel column headers with our system fields.</i></p>
+                    
+                    <div class="mapping-list" id="mapping-list">
+                        <!-- Mapping selects will be generated here -->
+                        <div class="mapping-item text-center text-muted" style="padding: 20px 0; font-size: 13px;">
+                            Please upload an Excel file first.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-section">
+                <div class="step-header flex-between">
+                    <div class="step-title-left">
+                        <div class="step-icon"><i class="ph-fill ph-eye"></i></div>
+                        <h2>3. Preview Data (Top 3 Rows)</h2>
+                    </div>
+                    <div class="valid-badge" id="valid-badge" style="display: none;">
+                        <i class="ph-fill ph-check-circle"></i> Valid Data Found
+                    </div>
+                </div>
+                
+                <div class="preview-card">
+                    <div class="table-container">
+                        <table class="data-table" id="preview-table">
+                            <thead>
+                                <tr id="preview-headers">
+                                    <th>Code</th><th>Name</th><th>Model</th><th>Manuf.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                                        No data to preview. Upload file above.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sticky Footer -->
+        <div class="import-footer">
+            <div class="footer-info">
+                <div class="info-icon"><i class="ph-fill ph-info"></i></div>
+                <p>Found <strong id="total-rows">0</strong> rows in the uploaded file.<br>0 errors detected.</p>
+            </div>
+            <div class="footer-actions">
+                <button class="btn btn-outline action-btn" onclick="window.location.href='index.html'">Save Draft</button>
+                <button class="btn btn-primary action-btn" onclick="submitImport()">Confirm Import</button>
+            </div>
+            <p class="copyright">© 2024 Corporate Asset Management System. All rights reserved.</p>
+        </div>
+
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('excel-file');
+        
+        const systemFields = [
+            { id: "assetCode", label: "ASSET CODE", aliases: ["code", "asset code", "mã tài sản", "ma tai san"], required: true },
+            { id: "assetName", label: "NAME", aliases: ["name", "asset name", "tên tài sản", "ten tai san"], required: true },
+            { id: "model", label: "MODEL", aliases: ["model", "spec", "specification"], required: false },
+            { id: "serialNo", label: "SERIAL NUMBER", aliases: ["serial", "serial number", "serial no", "số serial"], required: false },
+            { id: "assetType", label: "ASSET", aliases: ["asset", "type", "asset type", "loại", "loại tài sản"], required: false },
+            { id: "manufacturer", label: "MANUFACTURER", aliases: ["manufacturer", "hãng", "nhà sản xuất"], required: false },
+            { id: "acquisitionDate", label: "ACQUISITION DATE", aliases: ["acquisition date", "date", "ngày mua", "ngay mua"], required: false },
+            { id: "quantity", label: "QUANTITY", aliases: ["quantity", "qty", "số lượng", "so luong"], required: false },
+            { id: "totalAmount", label: "TOTAL AMOUNT", aliases: ["total amount", "amount", "total", "nguyên giá", "nguyen gia", "giá trị"], required: false },
+            { id: "month", label: "MONTH", aliases: ["month", "months", "tháng", "thang"], required: false },
+            { id: "remainingValue", label: "REMAINING VALUE", aliases: ["remaining value", "remaining", "giá trị còn lại", "gia tri con lai"], required: false },
+            { id: "usingPurpose", label: "USING PURPOSE", aliases: ["using purpose", "purpose", "mục đích sử dụng", "muc dich"], required: false },
+            { id: "suppliers", label: "SUPPLIERS", aliases: ["supplier", "suppliers", "nhà cung cấp", "nha cung cap"], required: false },
+            { id: "status", label: "STATUS", aliases: ["status", "trạng thái", "trang thai"], required: false },
+            { id: "location", label: "LOCATION", aliases: ["location", "vị trí", "vi tri", "nơi sử dụng"], required: false },
+            { id: "assetAttribution", label: "ASSET ATTRIBUTION", aliases: ["attribution", "asset attribution", "phân loại", "phan loai"], required: false },
+            { id: "image", label: "IMAGE", aliases: ["image", "photo", "picture", "img", "hình ảnh", "hinh anh", "ảnh", "image url"], required: false }
+        ];
+
+        // Drag & Drop Handlers
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#26408C";
+            dropZone.style.background = "rgba(38, 64, 140, 0.05)";
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = "#D1D5DB";
+            dropZone.style.background = "#FFFFFF";
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#D1D5DB";
+            dropZone.style.background = "#FFFFFF";
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            document.getElementById('file-name-display').innerHTML = `<strong>Selected: ${file.name}</strong><br>Processing...`;
+            
+            // Artificial progress
+            document.getElementById('progress-bar').style.width = '33%';
+            document.getElementById('progress-text').innerText = '33% Complete';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                // Get first sheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Convert to JSON
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // Array of arrays
+                
+                if (json.length > 1) {
+                    let headerIndex = 0;
+                    // Scan the first 10 rows to find the true header row (row with more than 1 column)
+                    for (let i = 0; i < Math.min(json.length, 10); i++) {
+                        const row = json[i] || [];
+                        const filledCells = row.filter(cell => cell !== undefined && cell !== null && cell.toString().trim() !== '');
+                        if (filledCells.length > 1) {
+                            headerIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    const headers = json[headerIndex];
+                    const rows = json.slice(headerIndex + 1).filter(row => row.length > 0);
+                    
+                    window.parsedExcelHeaders = headers;
+                    window.parsedExcelRows = rows;
+                    
+                    buildMapping(headers);
+                    buildPreview(headers, rows);
+                    
+                    document.getElementById('total-rows').innerText = rows.length;
+                    document.getElementById('valid-badge').style.display = 'inline-flex';
+                    
+                    document.getElementById('progress-bar').style.width = '100%';
+                    document.getElementById('progress-text').innerText = '100% Complete';
+                    document.getElementById('file-name-display').innerHTML = `<strong>Ready to map: ${file.name}</strong><br>File successfully loaded.`;
+                } else {
+                    alert("The uploaded Excel file appears to be empty.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function buildMapping(headers) {
+            const list = document.getElementById('mapping-list');
+            list.innerHTML = '';
+            
+            // Track which headers have been claimed by exact/best matches to avoid duplicates
+            const claimedHeaders = new Set();
+            
+            // First pass: find best matches for each system field
+            const bestMatches = systemFields.map(field => {
+                const fieldLabel = field.label.toLowerCase();
+                const fieldWords = fieldLabel.split(' ');
+                const aliases = (field.aliases || []).map(a => a.toLowerCase());
+                let bestIndex = -1;
+                let bestScore = 0;
+                
+                headers.forEach((header, index) => {
+                    if (!header) return;
+                    const h = header.toString().toLowerCase().trim();
+                    
+                    // Score 4: Exact alias match (e.g. header "type" === alias "type")
+                    if (aliases.some(a => h === a)) {
+                        if (4 > bestScore) { bestScore = 4; bestIndex = index; }
+                    }
+                    // Score 3: Exact label match (e.g. "asset code" === "asset code")
+                    else if (h === fieldLabel) {
+                        if (3 > bestScore) { bestScore = 3; bestIndex = index; }
+                    }
+                    // Score 2.5: Header contains an alias (e.g. "loại tài sản chính" contains alias "loại tài sản")
+                    else if (aliases.some(a => h.includes(a))) {
+                        if (2.5 > bestScore) { bestScore = 2.5; bestIndex = index; }
+                    }
+                    // Score 2: Contains full label
+                    else if (h.includes(fieldLabel)) {
+                        if (2 > bestScore) { bestScore = 2; bestIndex = index; }
+                    }
+                    // Score 1: All words match individually
+                    else if (fieldWords.length > 1 && fieldWords.every(w => h.includes(w))) {
+                        if (1 > bestScore) { bestScore = 1; bestIndex = index; }
+                    }
+                });
+                
+                return { fieldId: field.id, bestIndex, bestScore };
+            });
+            
+            // Claim high-score matches first (exact > full label > all words)
+            bestMatches
+                .filter(m => m.bestScore >= 2)
+                .forEach(m => claimedHeaders.add(m.bestIndex));
+            
+            systemFields.forEach((field, fieldIdx) => {
+                const item = document.createElement('div');
+                item.className = 'mapping-item';
+                
+                const label = document.createElement('label');
+                label.className = 'mapping-label';
+                label.innerHTML = `SYSTEM FIELD: ${field.label} ${field.required ? '<span class="required">*</span>' : ''}`;
+                
+                const select = document.createElement('select');
+                select.className = 'form-select';
+                
+                // Add empty option
+                select.innerHTML = `<option value="">-- Ignore Field --</option>`;
+                
+                const matchInfo = bestMatches[fieldIdx];
+                
+                headers.forEach((header, index) => {
+                    let headerText = header ? String(header).trim() : '';
+                    if (!headerText) return;
+                    
+                    const isSelected = matchInfo.bestIndex === index;
+                    select.innerHTML += `<option value="${index}" ${isSelected ? 'selected' : ''}>${headerText}</option>`;
+                });
+                
+                item.appendChild(label);
+                item.appendChild(select);
+                list.appendChild(item);
+            });
+        }
+
+        function buildPreview(headers, rows) {
+            const thead = document.getElementById('preview-headers');
+            const tbody = document.getElementById('preview-body');
+            
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // Limit preview to max 5 columns
+            const previewCols = Math.min(headers.length, 5);
+            
+            // Add columns
+            for(let i=0; i<previewCols; i++) {
+                const th = document.createElement('th');
+                th.textContent = headers[i] || `Col ${i+1}`;
+                thead.appendChild(th);
+            }
+            if (headers.length > 5) {
+                const th = document.createElement('th');
+                th.textContent = '...';
+                thead.appendChild(th);
+            }
+
+            // Top 3 rows
+            const topRows = rows.slice(0, 3);
+            topRows.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                for(let i=0; i<previewCols; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = row[i] || '-';
+                    tr.appendChild(td);
+                }
+                
+                if (headers.length > 5) {
+                    const td = document.createElement('td');
+                    td.textContent = '...';
+                    tr.appendChild(td);
+                }
+                
+                tbody.appendChild(tr);
+            });
+        }
+
+        function submitImport() {
+            if (document.getElementById('total-rows').innerText === '0') {
+                alert('Vui lòng upload file Excel trước khi tiếp tục!');
+                return;
+            }
+            
+            if (!window.parsedExcelRows) return;
+            
+            const mappingSelects = document.querySelectorAll('#mapping-list .form-select');
+            const mappings = {};
+            
+            mappingSelects.forEach((select, i) => {
+                if (select.value !== "") {
+                    mappings[systemFields[i].id] = parseInt(select.value, 10);
+                }
+            });
+            
+            const newAssets = window.parsedExcelRows.map(row => {
+               return {
+                   code: mappings['assetCode'] !== undefined ? row[mappings['assetCode']] : `AST-TEMP-${Math.floor(Math.random()*1000)}`,
+                   name: mappings['assetName'] !== undefined ? row[mappings['assetName']] : 'Unknown Asset',
+                   model: mappings['model'] !== undefined ? row[mappings['model']] : '',
+                   serialNo: mappings['serialNo'] !== undefined ? row[mappings['serialNo']] : '',
+                   asset: mappings['assetType'] !== undefined ? row[mappings['assetType']] : '',
+                   manufacturer: mappings['manufacturer'] !== undefined ? row[mappings['manufacturer']] : '',
+                   acquisitionDate: mappings['acquisitionDate'] !== undefined ? row[mappings['acquisitionDate']] : '',
+                   quantity: mappings['quantity'] !== undefined ? row[mappings['quantity']] : '',
+                   totalAmount: mappings['totalAmount'] !== undefined ? row[mappings['totalAmount']] : '',
+                   month: mappings['month'] !== undefined ? row[mappings['month']] : '',
+                   remainingValue: mappings['remainingValue'] !== undefined ? row[mappings['remainingValue']] : '',
+                   usingPurpose: mappings['usingPurpose'] !== undefined ? row[mappings['usingPurpose']] : '',
+                   suppliers: mappings['suppliers'] !== undefined ? row[mappings['suppliers']] : '',
+                   status: mappings['status'] !== undefined ? row[mappings['status']] : 'available',
+                   location: mappings['location'] !== undefined ? row[mappings['location']] : 'Unassigned',
+                   attribution: mappings['assetAttribution'] !== undefined ? row[mappings['assetAttribution']] : '',
+                   image: mappings['image'] !== undefined && row[mappings['image']] ? row[mappings['image']] : ''
+               };
+            });
+            
+            // Get existing assets from localStorage (empty array if none)
+            let existingAssets = localStorage.getItem('myAssets');
+            if (!existingAssets) {
+                existingAssets = '[]';
+            }
+            
+            const combinedList = [...newAssets, ...JSON.parse(existingAssets)];
+            localStorage.setItem('myAssets', JSON.stringify(combinedList));
+            
+            alert(`Thành công! Đã thêm ${newAssets.length} tài sản.`);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

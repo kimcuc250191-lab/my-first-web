@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Manager - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container { padding: 20px; }
+        .hero-card {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 24px; padding: 28px; color: white; margin-bottom: 24px;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
+            position: relative; overflow: hidden;
+        }
+        .hero-card::after {
+            content: ''; position: absolute; top: -50%; right: -20%;
+            width: 200px; height: 200px; background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .hero-label { font-size: 14px; opacity: 0.9; font-weight: 500; margin-bottom: 8px; }
+        .hero-value { font-size: 32px; font-weight: 800; margin-bottom: 20px; }
+        .hero-stats { display: flex; gap: 24px; }
+        .hero-stat-item { display: flex; flex-direction: column; gap: 4px; }
+        .hero-stat-val { font-size: 18px; font-weight: 700; }
+        .hero-stat-lbl { font-size: 11px; opacity: 0.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+        .stat-box {
+            background: white; border-radius: 16px; padding: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .stat-header { display: flex; align-items: center; justify-content: space-between; }
+        .stat-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .stat-icon.in-use { background: #ECFDF5; color: #10B981; }
+        .stat-icon.pending { background: #FFF7ED; color: #F97316; }
+        .stat-icon.lost { background: #FEF2F2; color: #EF4444; }
+        .stat-val { font-size: 20px; font-weight: 700; color: #111827; }
+        .stat-lbl { font-size: 12px; color: #6B7280; font-weight: 600; }
+
+        .chart-section { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
+        .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .chart-title { font-size: 15px; font-weight: 700; color: #111827; }
+        
+        .donut-container { display: flex; align-items: center; gap: 32px; }
+        .donut-chart-box { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+        .donut-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .donut-total { font-size: 20px; font-weight: 800; color: #111827; display: block; }
+        .donut-lbl { font-size: 10px; color: #6B7280; font-weight: 600; text-transform: uppercase; }
+        .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #4B5563; }
+        .legend-row-left { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .legend-color { width: 8px; height: 8px; border-radius: 50%; }
+        .legend-pct { font-weight: 700; color: #111827; }
+
+        /* Trend Bar Chart Styling */
+        .trend-chart-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+            width: 100%;
+        }
+        .trend-main-row {
+            display: flex;
+            gap: 12px;
+            height: 160px;
+            width: 100%;
+        }
+        .y-axis-flex {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: right;
+            width: 50px;
+            flex-shrink: 0;
+            color: #111827;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 0;
+        }
+        .chart-area-flex {
+            flex: 1;
+            position: relative;
+            border-left: 2px solid #E5E7EB;
+            border-bottom: 2px solid #E5E7EB;
+            min-width: 0;
+        }
+        .x-axis-flex {
+            display: flex;
+            margin-left: 62px; 
+            padding-top: 8px;
+            min-height: 30px;
+            background: #D1FAE5; /* Light green for visibility */
+            border: 1px solid #10B981;
+        }
+
+
+        .bar-chart-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .chart-label {
+            font-size: 10px;
+            color: #111827; /* Solid Black */
+            font-weight: 700;
+            text-align: center;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+
+
+
+
+
+
+
+
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="logo-branding" onclick="window.location.href='index.html'" style="cursor: pointer;">
+                <img src="assets/logo_daewoo.png" alt="" class="logo-img">
+            </div>
+
+
+
+            <div class="header-right">
+                <button class="icon-btn dark"><i class="ph ph-bell"></i></button>
+                <img src="https://i.pravatar.cc/150?u=admin" alt="User" class="avatar">
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- Hero Card -->
+            <div class="hero-card">
+                <div class="hero-label">Total Original Cost</div>
+                <div class="hero-value" id="hero-total-value">₫0</div>
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-val" id="hero-asset-count">0</span>
+                        <span class="hero-stat-lbl">Assets</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-val" id="hero-trend">+0</span>
+                        <span class="hero-stat-lbl">Trend</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Stats -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div class="stat-icon in-use"><i class="ph-fill ph-check-circle"></i></div>
+                    </div>
+                    <div class="stat-val" id="stat-in-use">0</div>
+                    <div class="stat-lbl">In Use</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div class="stat-icon pending"><i class="ph-fill ph-clock"></i></div>
+                    </div>
+                    <div class="stat-val" id="stat-pending">0</div>
+                    <div class="stat-lbl">Dispose</div>
+
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div class="stat-icon lost"><i class="ph-fill ph-warning"></i></div>
+                    </div>
+                    <div class="stat-val" id="stat-lost">0</div>
+                    <div class="stat-lbl">Other</div>
+
+                </div>
+
+                <!-- Restore Book Attribution Summary -->
+                <div class="stat-box" style="grid-column: span 3; background: #F5F3FF; border: 1px solid #DDD6FE; flex-direction: row; align-items: center; justify-content: space-between; padding: 16px 20px;">
+                    <div style="flex: 1;">
+                        <div class="stat-lbl" style="margin-bottom: 8px; color: #5B21B6; font-weight: 700; text-transform: uppercase; font-size: 11px;">Book Attribution</div>
+                        <div style="display: flex; gap: 32px;">
+                            <div>
+                                <div class="stat-val" id="stat-on-book" style="font-size: 22px; color: #111827;">0</div>
+                                <div class="stat-lbl" style="font-size: 10px;">Asset on book</div>
+                            </div>
+                            <div>
+                                <div class="stat-val" id="stat-out-of-book" style="font-size: 22px; color: #111827;">0</div>
+                                <div class="stat-lbl" style="font-size: 10px;">Asset out of book</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-icon" style="background: #C4B5FD; color: #5B21B6;" onclick="debugAttribution()"><i class="ph-fill ph-notebook"></i></div>
+                </div>
+
+
+            </div>
+
+            <!-- Restore Category Chart -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3 class="chart-title">Category Distribution</h3>
+                    <i class="ph ph-dots-three-vertical" style="color:#6B7280;"></i>
+                </div>
+                <div class="donut-container">
+                    <div class="donut-chart-box">
+                        <svg width="100%" height="100%" viewBox="0 0 36 36" id="donut-chart" style="transform: rotate(-90deg);"></svg>
+                        <div class="donut-center">
+                            <span class="donut-total" id="donut-total">0</span>
+                            <span class="donut-lbl">Items</span>
+                        </div>
+                    </div>
+                    <div class="donut-legend" id="donut-legend"></div>
+       
+
+
+                </div>
+
+
+
+
+
+
+            </div>
+
+            <!-- Remaining Value Comparison Bar Chart -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3 class="chart-title">Remaining Value Comparison</h3>
+                </div>
+                <div id="bar-chart-container" style="padding: 10px 0;">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+            
+            <div style="height: 100px;"></div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="ph ph-package"></i><span>Assets</span>
+            </a>
+            <a href="dashboard.html" class="nav-item active">
+                <i class="ph ph-chart-pie"></i><span>Dashboard</span>
+            </a>
+            <button class="fab" onclick="window.location.href='add-asset.html'">
+                <i class="ph ph-plus"></i>
+            </button>
+            <a href="directory.html" class="nav-item">
+                <i class="ph ph-users-three"></i><span>Contact</span>
+            </a>
+            <a href="import-gsheet.html" class="nav-item">
+                <i class="ph ph-file-arrow-up"></i><span>Import</span>
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+
+        function parseVNNumber(val) {
+            if (val === null || val === undefined) return 0;
+            if (typeof val === 'number') return val;
+            let s = String(val).trim().replace(/[₫đ$VND\s]/gi, '');
+            const dotCount = (s.match(/\./g) || []).length;
+            if (dotCount > 1) s = s.replace(/\./g, '').replace(',', '.');
+            else if (dotCount === 1 && s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+            else if (dotCount === 1) {
+                const parts = s.split('.');
+                if (parts[1] && parts[1].length === 3 && !s.includes(',')) s = s.replace('.', '');
+            } else s = s.replace(/,/g, '');
+            s = s.replace(/[^0-9.-]/g, '');
+            return parseFloat(s) || 0;
+        }
+
+        function renderDashboard() {
+            assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+            updateHero();
+            updateMiniStats();
+            renderDonut();
+            renderBarChart();
+            renderLineChart();
+        }
+
+        function updateHero() {
+            let totalVal = 0;
+            assets.forEach(a => {
+                totalVal += parseVNNumber(a.totalAmount || a.originalCost || a.price || 0);
+            });
+            const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+            document.getElementById('hero-total-value').textContent = fmt.format(totalVal);
+            document.getElementById('hero-asset-count').textContent = assets.length;
+            document.getElementById('hero-trend').textContent = '+' + assets.length;
+        }
+
+        function updateMiniStats() {
+            let inUse = 0, pending = 0, lost = 0;
+            let onBook = 0, outOfBook = 0;
+
+            assets.forEach(a => {
+                // STATUS COUNTING
+                const s = (a.status || '').toLowerCase().trim();
+                // Map based on user request: inuse/available -> In Use, dispose -> Dispose
+                if (s.includes('inuse') || s.includes('in use') || s.includes('in-use') || s.includes('active') || s.includes('available') || !s) {
+                    inUse++;
+                } else if (s.includes('dispose') || s.includes('thanh lý') || s.includes('liquidated')) {
+                    pending++;
+                } else {
+                    lost++;
+                }
+
+                // BOOK ATTRIBUTION (AOB/OOB) COUNTING
+                let assetTypeVal = a.asset || a.assetType || a.type || '';
+                
+                // Fallback: If type is empty, try to derive from Code prefix
+                if (!assetTypeVal && a.code) {
+                    const codeUpper = a.code.toUpperCase();
+                    if (codeUpper.startsWith('AOB')) assetTypeVal = 'Asset On Book';
+                    else if (codeUpper.startsWith('OOB')) assetTypeVal = 'Asset Out of Book';
+                }
+
+                // Normalizing values
+                if (assetTypeVal) {
+                    const upper = assetTypeVal.toUpperCase();
+                    if (upper === 'AOB' || upper === 'ASSET ON BOOK') {
+                        onBook++;
+                    } else if (upper === 'OOB' || upper === 'ASSET OUT OF BOOK') {
+                        outOfBook++;
+                    }
+                }
+            });
+
+            document.getElementById('stat-in-use').textContent = inUse;
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('stat-lost').textContent = lost;
+            
+            document.getElementById('stat-on-book').textContent = onBook;
+            document.getElementById('stat-out-of-book').textContent = outOfBook;
+        }
+
+        function debugAttribution() {
+            const statusVals = {};
+            const typeVals = {};
+            assets.forEach(a => {
+                const s = (a.status || '').trim() || '(Rỗng)';
+                const t = (a.asset || a.assetType || a.type || '').trim() || '(Rỗng)';
+                statusVals[s] = (statusVals[s] || 0) + 1;
+                typeVals[t] = (typeVals[t] || 0) + 1;
+            });
+            alert("PHÂN TÍCH DỮ LIỆU:\n\n1. Các trạng thái (Status) đang có:\n" + 
+                  Object.entries(statusVals).map(([k,v]) => `- ${k}: ${v}`).join('\n') + 
+                  "\n\n2. Các loại tài sản (Asset Type) đang có:\n" + 
+                  Object.entries(typeVals).map(([k,v]) => `- ${k}: ${v}`).join('\n'));
+        }
+
+
+
+
+
+
+
+        function renderDonut() {
+            const svg = document.getElementById('donut-chart');
+            const legend = document.getElementById('donut-legend');
+            svg.innerHTML = ''; legend.innerHTML = '';
+            const total = assets.length;
+            document.getElementById('donut-total').textContent = total;
+
+            if (total === 0) {
+                svg.innerHTML = '<circle cx="18" cy="18" r="15.915" fill="none" stroke="#F3F4F6" stroke-width="6"></circle>';
+                return;
+            }
+
+            const colors = ['#2563EB', '#F59E0B', '#10B981', '#818CF8', '#EC4899'];
+            const catMap = {};
+            assets.forEach(a => {
+                const cat = a.attribution || a.assetDistribution || a.type || 'Khác';
+                catMap[cat] = (catMap[cat] || 0) + 1;
+            });
+
+            const sorted = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+            const categories = {};
+            sorted.forEach(([cat, count], i) => {
+                if (i < 4) categories[cat] = { count, color: colors[i] };
+                else {
+                    if (!categories['Khác']) categories['Khác'] = { count: 0, color: '#9CA3AF' };
+                    categories['Khác'].count += count;
+                }
+            });
+
+            let cum = 0;
+            Object.entries(categories).forEach(([name, { count, color }]) => {
+                if (count === 0) return;
+                const pct = (count / total) * 100;
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", "18"); circle.setAttribute("cy", "18");
+                circle.setAttribute("r", "15.915");
+                circle.setAttribute("fill", "none");
+                circle.setAttribute("stroke", color);
+                circle.setAttribute("stroke-width", "6");
+                circle.setAttribute("stroke-dasharray", `${pct} ${100-pct}`);
+                circle.setAttribute("stroke-dashoffset", (100 - cum).toString());
+                svg.appendChild(circle);
+                cum += pct;
+                legend.innerHTML += `<div class="legend-row">
+                    <div class="legend-row-left"><div class="legend-color" style="background:${color}"></div>${name}</div>
+                    <div class="legend-pct">${Math.round(pct)}%</div>
+                </div>`;
+            });
+        }
+
+        function renderBarChart() {
+            const container = document.getElementById('bar-chart-container');
+            if (!container) return;
+            let aobValue = 0, oobValue = 0;
+            
+            assets.forEach(a => {
+                const val = parseVNNumber(a.remainingValue || 0);
+                let type = a.asset || a.assetType || a.type || '';
+                if (!type && a.code) {
+                   const code = a.code.toUpperCase();
+                   if (code.startsWith('AOB')) type = 'AOB';
+                   else if (code.startsWith('OOB')) type = 'OOB';
+                }
+                
+                const upper = type.toUpperCase();
+                if (upper.includes('AOB') || upper.includes('ON BOOK')) aobValue += val;
+                else if (upper.includes('OOB') || upper.includes('OUT OF BOOK')) oobValue += val;
+            });
+
+            const max = Math.max(aobValue, oobValue, 1);
+            const aobPct = (aobValue / max) * 100;
+            const oobPct = (oobValue / max) * 100;
+            const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+            const totalValue = aobValue + oobValue;
+
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <div style="padding-bottom:12px; border-bottom:1px dashed #E2E8F0; margin-bottom:4px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px;">Combined Total</span>
+                            <span style="font-size:18px; font-weight:800; color:#2563EB;">${fmt.format(totalValue)}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
+                            <span>ASSET ON BOOK</span>
+                            <span style="color:#111827;">${fmt.format(aobValue)}</span>
+                        </div>
+                        <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
+                            <div style="width:${aobPct}%; height:100%; background: linear-gradient(90deg, #6366F1, #818CF8); border-radius:6px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
+                            <span>ASSET OUT OF BOOK</span>
+                            <span style="color:#111827;">${fmt.format(oobValue)}</span>
+                        </div>
+                        <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
+                            <div style="width:${oobPct}%; height:100%; background: linear-gradient(90deg, #94A3B8, #CBD5E1); border-radius:6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLineChart() {
+            // Placeholder for trend line
+        }
+
+
+
+
+
+
+
+
+
+        window.onload = renderDashboard;
+
+        // ===================== DRAGGABLE FAB =====================
+        (function() {
+            const fab = document.querySelector('.fab');
+            if (!fab) return;
+            const threshold = 5;
+            const savedPos = JSON.parse(localStorage.getItem('fabPosition') || 'null');
+            if (savedPos) {
+                fab.style.right = savedPos.right; fab.style.bottom = savedPos.bottom;
+                fab.style.left = 'auto'; fab.style.top = 'auto';
+            }
+            let isDragging = false, startX, startY, initialRight, initialBottom;
+            function onStart(e) {
+                isDragging = false;
+                const touch = e.type === 'touchstart' ? e.touches[0] : e;
+                startX = touch.clientX; startY = touch.clientY;
+                const rect = fab.getBoundingClientRect();
+                initialRight = window.innerWidth - rect.right;
+                initialBottom = window.innerHeight - rect.bottom;
+                fab.style.transition = 'none';
+                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchmove', onMove, { passive: false }); document.addEventListener('touchend', onEnd);
+            }
+            function onMove(e) {
+                const touch = e.type === 'touchmove' ? e.touches[0] : e;
+                const dx = touch.clientX - startX, dy = touch.clientY - startY;
+                if (!isDragging && (Math.abs(dx) > threshold || Math.abs(dy) > threshold)) isDragging = true;
+                if (isDragging) {
+                    if (e.cancelable) e.preventDefault();
+                    let newRight = initialRight - dx, newBottom = initialBottom - dy;
+                    const padding = 10, fabSize = 56;
+                    newRight = Math.max(padding, Math.min(newRight, window.innerWidth - fabSize - padding));
+                    newBottom = Math.max(padding, Math.min(newBottom, window.innerHeight - fabSize - padding));
+                    fab.style.right = newRight + 'px'; fab.style.bottom = newBottom + 'px';
+                    fab.style.left = 'auto'; fab.style.top = 'auto';
+                }
+            }
+            function onEnd() {
+                document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd);
+                if (isDragging) {
+                    fab.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); }, { once: true, capture: true });
+                    localStorage.setItem('fabPosition', JSON.stringify({ right: fab.style.right, bottom: fab.style.bottom }));
+                }
+                fab.style.transition = 'transform 0.2s';
+            }
+            fab.addEventListener('mousedown', onStart); fab.addEventListener('touchstart', onStart, { passive: true });
+        })();
+    </script>
+</body>
+</html>

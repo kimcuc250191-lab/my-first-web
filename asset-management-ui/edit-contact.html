@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Contact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #F8F9FB;">
+    <div class="app-container has-fixed-bottom">
+        <!-- Header -->
+        <header class="header contact-header">
+            <a href="directory.html" class="icon-btn dark contact-header-left"><i class="ph ph-arrow-left"></i></a>
+            <h1>Edit Contact</h1>
+            <button class="icon-btn-text danger" onclick="deleteContact()">Delete</button>
+        </header>
+
+        <!-- Profile Photo Area -->
+        <div class="profile-photo-container">
+            <div class="photo-wrapper">
+                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=240&q=80" alt="Profile" class="photo-image" id="profile-image">
+                <button class="photo-badge-btn">
+                    <i class="ph-fill ph-camera"></i>
+                </button>
+            </div>
+            <h2 class="profile-name" id="profile-name-display">Loading...</h2>
+            <p class="profile-title" id="profile-title-display">Loading...</p>
+        </div>
+
+        <!-- Form fields -->
+        <div class="form-container" style="padding-top: 0;">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <div class="input-with-icon">
+                    <input type="text" class="form-input" id="edit-name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Job Title</label>
+                <div class="input-with-icon">
+                    <input type="text" class="form-input" id="edit-title">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Department</label>
+                <div class="input-with-icon">
+                    <input type="text" class="form-input" id="edit-department">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-phone" style="color: #9CA3AF;"></i>
+                    <input type="tel" class="form-input" id="edit-phone">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-with-icon">
+                    <i class="ph-fill ph-envelope-simple" style="color: #9CA3AF;"></i>
+                    <input type="email" class="form-input" id="edit-email">
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Bottom Button -->
+        <div class="fixed-bottom-action">
+            <button class="btn-primary-blue" onclick="updateContact()">
+                Update
+            </button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="ph-fill ph-warning-circle"></i>
+            </div>
+            <h3 class="modal-title">Delete Contact</h3>
+            <p class="modal-text">Are you sure you want to delete <strong id="delete-contact-name">this contact</strong>? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentContactId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = parseInt(urlParams.get('id')) || 1;
+            currentContactId = id;
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const contact = contacts.find(c => c.id === id);
+            
+            if (contact) {
+                document.getElementById('edit-name').value = contact.name || '';
+                document.getElementById('edit-title').value = contact.title || '';
+                document.getElementById('edit-department').value = contact.department || '';
+                document.getElementById('edit-phone').value = contact.phone || '';
+                document.getElementById('edit-email').value = contact.email || '';
+                
+                document.getElementById('profile-name-display').innerText = contact.name || 'Unknown';
+                document.getElementById('profile-title-display').innerText = contact.title || '';
+                document.getElementById('delete-contact-name').innerText = contact.name || 'this contact';
+                if (contact.image) {
+                    document.getElementById('profile-image').src = contact.image;
+                }
+            }
+
+            document.getElementById('confirmDeleteBtn').onclick = () => {
+                let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+                contacts = contacts.filter(c => c.id !== currentContactId);
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                window.location.href = 'directory.html';
+            };
+        });
+
+        function deleteContact() {
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        function updateContact() {
+            let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const index = contacts.findIndex(c => c.id === currentContactId);
+            
+            if (index !== -1) {
+                contacts[index].name = document.getElementById('edit-name').value;
+                contacts[index].title = document.getElementById('edit-title').value;
+                contacts[index].department = document.getElementById('edit-department').value;
+                contacts[index].phone = document.getElementById('edit-phone').value;
+                contacts[index].email = document.getElementById('edit-email').value;
+                
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+            }
+            
+            window.location.href = 'directory.html';
+        }
+    </script>
+</body>
+</html>
