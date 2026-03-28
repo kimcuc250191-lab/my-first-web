@@ -751,23 +751,36 @@
             }
         }
 
-        // Restore last sync status on load
+       // TỰ ĐỘNG CHẠY KHI MỞ TRANG
         (function() {
-            const lastSync = localStorage.getItem('lastSyncTime');
+            // 1. Điền sẵn link CSV của bạn vào đây
+            const myFixedUrl = 'DÁN_LINK_XUẤT_BẢN_CSV_CỦA_BẠN_VÀO_ĐÂY';
+            
+            const input = document.getElementById('sync-url-input');
             const savedUrl = localStorage.getItem('syncSheetUrl');
-            if (savedUrl) {
-                document.getElementById('sync-url-input').value = savedUrl;
-                document.getElementById('sync-actions').style.display = 'flex';
-                if (lastSync) {
-                    const d = new Date(lastSync);
-                    document.getElementById('sync-badge').className = 'sync-status-badge connected';
-                    document.getElementById('sync-badge-text').textContent = 'Đã kết nối';
-                    document.getElementById('sync-info-text').textContent = `Lần đồng bộ cuối: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} ${d.toLocaleDateString('vi-VN')}`;
-                }
+
+            // Ưu tiên dùng link cố định, nếu không có thì dùng link đã lưu
+            if (!savedUrl || savedUrl === '') {
+                input.value = myFixedUrl;
+                localStorage.setItem('syncSheetUrl', myFixedUrl);
+            } else {
+                input.value = savedUrl;
             }
 
-        })();
+            // 2. Tự động nhấn nút Sync sau khi trang tải xong 1 giây
+            setTimeout(() => {
+                syncFromSheet(true); 
+            }, 1000);
 
+            // Hiển thị trạng thái lần cuối
+            const lastSync = localStorage.getItem('lastSyncTime');
+            if (lastSync) {
+                const d = new Date(lastSync);
+                document.getElementById('sync-badge').className = 'sync-status-badge connected';
+                document.getElementById('sync-badge-text').textContent = 'Đã kết nối';
+                document.getElementById('sync-info-text').textContent = `Cập nhật lúc: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+            }
+        })();
         function toggleEditSync() {
             const input = document.getElementById('sync-url-input');
             const editBtn = document.getElementById('edit-sync-btn');
