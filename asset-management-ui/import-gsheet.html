@@ -385,11 +385,10 @@
 
             if (isPublishedFormat) {
                 // Published format: /d/e/[ID]/pubhtml -> transform to /pub?output=csv
-                csvUrl = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?output=csv`;
-                exportUrl = csvUrl; 
+                csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vS5WOZLw0aQGcLUb0nd8wegWi23Co96zXHKj0hNwwnT6B17qqO8f_R2jEd9WNTzCg/pub?output=csv; 
             } else {
                 // Standard format: /d/[ID]/edit
-                csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+                csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vS5WOZLw0aQGcLUb0nd8wegWi23Co96zXHKj0hNwwnT6B17qqO8f_R2jEd9WNTzCg/pub?output=csv`;
                 exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
             }
 
