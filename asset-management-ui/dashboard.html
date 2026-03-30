@@ -326,7 +326,7 @@
                 const s = (a.status || '').toLowerCase().trim();
                 if (s.includes('inuse') || s.includes('in use') || s.includes('active') || s.includes('available') || !s) {
                     inUse++;
-                } else if (s.includes('dispose') || s.includes('thanh lý') || s.includes('liquidated')) {
+                } else if (s.includes('dispose') || s.includes('discard') || s.includes('transfer')) {
                     pending++;
                 } else {
                     lost++;
