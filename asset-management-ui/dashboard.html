@@ -270,7 +270,7 @@
     <script>
         let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
         // --- DÁN ĐOẠN NÀY VÀO ĐÂY ---
-        const systemFields = [
+       const systemFields = [
             { id: "assetCode", key: "code", aliases: ["asset code", "code"] },
             { id: "assetName", key: "name", aliases: ["name"] },
             { id: "assetType", key: "asset", aliases: ["asset", "type"] },
@@ -317,14 +317,13 @@
             document.getElementById('hero-asset-count').textContent = assets.length;
             document.getElementById('hero-trend').textContent = '+' + assets.length;
         }
-       function updateMiniStats() {
+      function updateMiniStats() {
             let inUse = 0, pending = 0, lost = 0;
             let onBook = 0, outOfBook = 0;
 
             assets.forEach(a => {
-                // 1. ĐẾM TRẠNG THÁI SỬ DỤNG (Dựa trên cột Status)
+                // 1. Đếm Trạng thái sử dụng
                 const s = (a.status || '').toLowerCase().trim();
-                // Khớp các từ khóa thực tế trong file của Daewoo
                 if (s.includes('inuse') || s.includes('in use') || s.includes('active') || s.includes('available') || !s) {
                     inUse++;
                 } else if (s.includes('dispose') || s.includes('thanh lý') || s.includes('liquidated')) {
@@ -333,46 +332,21 @@
                     lost++;
                 }
 
-                // 2. ĐẾM THEO DÕI SỔ SÁCH (Dựa trên cột Asset Distribution)
-                // Cột này đã được map vào thuộc tính 'attribution'
+                // 2. Đếm Book Attribution - LẤY THEO CỘT ASSET (attribution)
                 const attr = (a.attribution || '').toUpperCase();
-                
                 if (attr.includes('AOB') || attr.includes('ON BOOK')) {
                     onBook++;
-                } else if (attr.includes('OOB') || attr.includes('OUT OF BOOK')) {
+                } else if (attr.includes('OOB') || attr.includes('OUT OF BOOK') || attr.includes('OFF BOOK')) {
                     outOfBook++;
                 }
             });
 
-            // Đưa con số lên giao diện Dashboard
             document.getElementById('stat-in-use').textContent = inUse;
             document.getElementById('stat-pending').textContent = pending;
             document.getElementById('stat-lost').textContent = lost;
             document.getElementById('stat-on-book').textContent = onBook;
             document.getElementById('stat-out-of-book').textContent = outOfBook;
         }
-
-
-        function debugAttribution() {
-            const statusVals = {};
-            const typeVals = {};
-            assets.forEach(a => {
-                const s = (a.status || '').trim() || '(Rỗng)';
-                const t = (a.asset || a.assetType || a.type || '').trim() || '(Rỗng)';
-                statusVals[s] = (statusVals[s] || 0) + 1;
-                typeVals[t] = (typeVals[t] || 0) + 1;
-            });
-            alert("PHÂN TÍCH DỮ LIỆU:\n\n1. Các trạng thái (Status) đang có:\n" + 
-                  Object.entries(statusVals).map(([k,v]) => `- ${k}: ${v}`).join('\n') + 
-                  "\n\n2. Các loại tài sản (Asset Type) đang có:\n" + 
-                  Object.entries(typeVals).map(([k,v]) => `- ${k}: ${v}`).join('\n'));
-        }
-
-
-
-
-
-
 
         function renderDonut() {
             const svg = document.getElementById('donut-chart');
@@ -389,7 +363,8 @@
             const colors = ['#2563EB', '#F59E0B', '#10B981', '#818CF8', '#EC4899'];
             const catMap = {};
             assets.forEach(a => {
-                const cat = a.attribution || a.assetDistribution || a.type || 'Khác';
+                // Phân loại biểu đồ tròn theo cột Asset
+                const cat = a.attribution || 'Khác';
                 catMap[cat] = (catMap[cat] || 0) + 1;
             });
 
@@ -422,6 +397,55 @@
                     <div class="legend-pct">${Math.round(pct)}%</div>
                 </div>`;
             });
+        }
+
+        function renderBarChart() {
+            const container = document.getElementById('bar-chart-container');
+            if (!container) return;
+            let aobValue = 0, oobValue = 0;
+            
+            assets.forEach(a => {
+                const val = parseVNNumber(a.remainingValue || a.totalAmount || 0);
+                const attr = (a.attribution || '').toUpperCase();
+                
+                if (attr.includes('AOB') || attr.includes('ON BOOK')) aobValue += val;
+                else if (attr.includes('OOB') || attr.includes('OUT OF BOOK') || attr.includes('OFF BOOK')) oobValue += val;
+            });
+
+            const max = Math.max(aobValue, oobValue, 1);
+            const aobPct = (aobValue / max) * 100;
+            const oobPct = (oobValue / max) * 100;
+            const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
+            const totalValue = aobValue + oobValue;
+
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <div style="padding-bottom:12px; border-bottom:1px dashed #E2E8F0; margin-bottom:4px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px;">Combined Remaining Value</span>
+                            <span style="font-size:18px; font-weight:800; color:#2563EB;">${fmt.format(totalValue)}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
+                            <span>ASSET ON BOOK</span>
+                            <span style="color:#111827;">${fmt.format(aobValue)}</span>
+                        </div>
+                        <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
+                            <div style="width:${aobPct}%; height:100%; background: linear-gradient(90deg, #6366F1, #818CF8); border-radius:6px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
+                            <span>ASSET OUT OF BOOK</span>
+                            <span style="color:#111827;">${fmt.format(oobValue)}</span>
+                        </div>
+                        <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
+                            <div style="width:${oobPct}%; height:100%; background: linear-gradient(90deg, #94A3B8, #CBD5E1); border-radius:6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderBarChart() {
