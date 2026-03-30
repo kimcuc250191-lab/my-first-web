@@ -332,11 +332,12 @@
                     lost++;
                 }
 
-                // 2. Đếm Book Attribution - LẤY THEO CỘT ASSET (attribution)
-                const attr = (a.attribution || '').toUpperCase();
-                if (attr.includes('AOB') || attr.includes('ON BOOK')) {
+                // 2. ĐẾM THEO DÕI SỔ SÁCH (Quét trực tiếp trường asset chi tiết)
+                const assetDetail = (a.asset || '').toUpperCase();
+                
+                if (assetDetail.includes('AOB') || assetDetail.includes('ON BOOK')) {
                     onBook++;
-                } else if (attr.includes('OOB') || attr.includes('OUT OF BOOK') || attr.includes('OFF BOOK')) {
+                } else if (assetDetail.includes('OOB') || assetDetail.includes('OUT OF BOOK') || assetDetail.includes('OFF BOOK')) {
                     outOfBook++;
                 }
             });
