@@ -269,6 +269,17 @@
 
     <script>
         let assets = JSON.parse(localStorage.getItem('myAssets') || '[]');
+        // --- DÁN ĐOẠN NÀY VÀO ĐÂY ---
+        const systemFields = [
+            { id: "assetCode", key: "code", aliases: ["asset code", "code"] },
+            { id: "assetName", key: "name", aliases: ["name"] },
+            { id: "assetType", key: "asset", aliases: ["asset", "type"] },
+            { id: "totalAmount", key: "totalAmount", aliases: ["total amount", "amount"] },
+            { id: "remainingValue", key: "remainingValue", aliases: ["remaining value"] },
+            { id: "status", key: "status", aliases: ["status", "trạng thái"] },
+            { id: "assetAttribution", key: "attribution", aliases: ["asset distribution", "attribution"] }
+        ];
+        
 
         function parseVNNumber(val) {
             if (val === null || val === undefined) return 0;
@@ -294,26 +305,27 @@
             renderLineChart();
         }
 
-        function updateHero() {
+       function updateHero() {
             let totalVal = 0;
             assets.forEach(a => {
-                totalVal += parseVNNumber(a.totalAmount || a.originalCost || a.price || 0);
+                // Lấy giá trị từ key 'totalAmount' mà trang chủ đã đồng bộ
+                const val = a.totalAmount || a.originalCost || a.price || 0;
+                totalVal += parseVNNumber(val);
             });
             const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
             document.getElementById('hero-total-value').textContent = fmt.format(totalVal);
             document.getElementById('hero-asset-count').textContent = assets.length;
             document.getElementById('hero-trend').textContent = '+' + assets.length;
         }
-
-        function updateMiniStats() {
+       function updateMiniStats() {
             let inUse = 0, pending = 0, lost = 0;
             let onBook = 0, outOfBook = 0;
 
             assets.forEach(a => {
-                // STATUS COUNTING
+                // 1. ĐẾM TRẠNG THÁI SỬ DỤNG (Dựa trên cột Status)
                 const s = (a.status || '').toLowerCase().trim();
-                // Map based on user request: inuse/available -> In Use, dispose -> Dispose
-                if (s.includes('inuse') || s.includes('in use') || s.includes('in-use') || s.includes('active') || s.includes('available') || !s) {
+                // Khớp các từ khóa thực tế trong file của Daewoo
+                if (s.includes('inuse') || s.includes('in use') || s.includes('active') || s.includes('available') || !s) {
                     inUse++;
                 } else if (s.includes('dispose') || s.includes('thanh lý') || s.includes('liquidated')) {
                     pending++;
@@ -321,31 +333,21 @@
                     lost++;
                 }
 
-                // BOOK ATTRIBUTION (AOB/OOB) COUNTING
-                let assetTypeVal = a.asset || a.assetType || a.type || '';
+                // 2. ĐẾM THEO DÕI SỔ SÁCH (Dựa trên cột Asset Distribution)
+                // Cột này đã được map vào thuộc tính 'attribution'
+                const attr = (a.attribution || '').toUpperCase();
                 
-                // Fallback: If type is empty, try to derive from Code prefix
-                if (!assetTypeVal && a.code) {
-                    const codeUpper = a.code.toUpperCase();
-                    if (codeUpper.startsWith('AOB')) assetTypeVal = 'Asset On Book';
-                    else if (codeUpper.startsWith('OOB')) assetTypeVal = 'Asset Out of Book';
-                }
-
-                // Normalizing values
-                if (assetTypeVal) {
-                    const upper = assetTypeVal.toUpperCase();
-                    if (upper === 'AOB' || upper === 'ASSET ON BOOK') {
-                        onBook++;
-                    } else if (upper === 'OOB' || upper === 'ASSET OUT OF BOOK') {
-                        outOfBook++;
-                    }
+                if (attr.includes('AOB') || attr.includes('ON BOOK')) {
+                    onBook++;
+                } else if (attr.includes('OOB') || attr.includes('OUT OF BOOK')) {
+                    outOfBook++;
                 }
             });
 
+            // Đưa con số lên giao diện Dashboard
             document.getElementById('stat-in-use').textContent = inUse;
             document.getElementById('stat-pending').textContent = pending;
             document.getElementById('stat-lost').textContent = lost;
-            
             document.getElementById('stat-on-book').textContent = onBook;
             document.getElementById('stat-out-of-book').textContent = outOfBook;
         }
