@@ -400,63 +400,6 @@
             });
         }
 
-        function renderBarChart() {
-            const container = document.getElementById('bar-chart-container');
-            if (!container) return;
-            let aobValue = 0, oobValue = 0;
-            
-           assets.forEach(a => {
-                // Lấy giá trị tiền (Ưu tiên cột Total Amount - Cột P)
-                const val = parseVNNumber(a.totalAmount || a.remainingValue || 0);
-                
-                // Lấy dữ liệu từ trường asset (Cột I) và chuẩn hóa
-                const assetData = (a.asset || '').toUpperCase().trim();
-                
-                // Kiểm tra điều kiện chính xác hơn
-                if (assetData.includes('AOB') || assetData.includes('ON BOOK')) {
-                    aobValue += val;
-                } 
-                // Thêm 'OFF BOOK' và kiểm tra kỹ chữ OOB
-                else if (assetData.includes('OOB') || assetData.includes('OFF BOOK') || assetData.includes('OFF BOOK')) {
-                    oobValue += val;
-                }
-            });
-
-            const max = Math.max(aobValue, oobValue, 1);
-            const aobPct = (aobValue / max) * 100;
-            const oobPct = (oobValue / max) * 100;
-            const fmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
-            const totalValue = aobValue + oobValue;
-
-            container.innerHTML = `
-                <div style="display:flex; flex-direction:column; gap:24px;">
-                    <div style="padding-bottom:12px; border-bottom:1px dashed #E2E8F0; margin-bottom:4px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px;">Combined Remaining Value</span>
-                            <span style="font-size:18px; font-weight:800; color:#2563EB;">${fmt.format(totalValue)}</span>
-                        </div>
-                    </div>
-                    <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
-                            <span>ASSET ON BOOK</span>
-                            <span style="color:#111827;">${fmt.format(aobValue)}</span>
-                        </div>
-                        <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
-                            <div style="width:${aobPct}%; height:100%; background: linear-gradient(90deg, #6366F1, #818CF8); border-radius:6px;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
-                            <span>ASSET OUT OF BOOK</span>
-                            <span style="color:#111827;">${fmt.format(oobValue)}</span>
-                        </div>
-                        <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
-                            <div style="width:${oobPct}%; height:100%; background: linear-gradient(90deg, #94A3B8, #CBD5E1); border-radius:6px;"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
         function renderBarChart() {
             const container = document.getElementById('bar-chart-container');
