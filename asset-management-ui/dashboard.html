@@ -407,7 +407,7 @@
             let aobValue = 0, oobValue = 0;
             
             assets.forEach(a => {
-                // Lấy số tiền từ Remaining value (Cột M)
+                // Lấy số tiền từ Total Amount (Cột P)
                 const val = parseVNNumber(a.totalAmount || a.remainingValue || 0);
                 // Lấy thông tin phân loại từ cột Asset (Cột I)
                 const assetInfo = (a.asset || '').toUpperCase();
