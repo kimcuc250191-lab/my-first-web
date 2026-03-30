@@ -234,27 +234,23 @@
         let activeFilters = { search: '', category: null };
 
         // ===================== SYSTEM FIELDS (for auto-mapping) =====================
-        const systemFields = [
-            { id: "assetCode", key: "code", aliases: ["code", "asset code", "mã tài sản", "ma tai san", "số thẻ", "so the"] },
-            { id: "assetName", key: "name", aliases: ["name", "asset name", "tên tài sản", "ten tai san", "tài sản"] },
-            { id: "model", key: "model", aliases: ["model", "spec", "specification", "thông số"] },
-            { id: "serialNo", key: "serialNo", aliases: ["serial", "serial number", "serial no", "số serial", "số sê ri"] },
-            { id: "assetType", key: "asset", aliases: ["asset", "type", "asset type", "loại", "loại tài sản", "danh mục"] },
-            { id: "manufacturer", key: "manufacturer", aliases: ["manufacturer", "hãng", "nhà sản xuất"] },
-            { id: "acquisitionDate", key: "acquisitionDate", aliases: ["acquisition date", "date", "ngày mua", "ngay mua"] },
-            { id: "quantity", key: "quantity", aliases: ["quantity", "qty", "số lượng", "so luong"] },
-            { id: "totalAmount", key: "totalAmount", aliases: ["total amount", "amount", "total", "nguyên giá", "nguyen gia", "giá trị", "original cost", "val", "giá mua"] },
-            { id: "month", key: "month", aliases: ["month", "months", "tháng", "thời gian sử dụng"] },
-            { id: "remainingValue", key: "remainingValue", aliases: ["remaining value", "remaining", "giá trị còn lại", "gia tri con lai", "net book value"] },
-            { id: "usingPurpose", key: "usingPurpose", aliases: ["using purpose", "purpose", "mục đích sử dụng"] },
-            { id: "suppliers", key: "suppliers", aliases: ["supplier", "suppliers", "nhà cung cấp"] },
-            { id: "status", key: "status", aliases: ["status", "trạng thái", "trang thai", "tình trạng"] },
-            { id: "location", key: "location", aliases: ["location", "vị trí", "vi tri", "nơi sử dụng"] },
-            { id: "assetAttribution", key: "attribution", aliases: ["attribution", "asset attribution", "asset distribution", "distribution", "phân loại", "phân bổ", "phan loai", "phan bo"] },
-
-            { id: "image", key: "image", aliases: ["image", "photo", "picture", "img", "hình ảnh", "ảnh", "refer picture", "ảnh tham chiếu", "anh"] }
+       const systemFields = [
+            { id: "assetCode", key: "code", aliases: ["asset code", "mã tài sản", "mã số"] },
+            { id: "assetName", key: "name", aliases: ["name", "tên tài sản", "tên"] },
+            { id: "model", key: "model", aliases: ["model", "thông số"] },
+            { id: "serialNo", key: "serialNo", aliases: ["serial number", "số serial", "seri"] },
+            { id: "assetType", key: "asset", aliases: ["asset", "loại tài sản", "loại"] },
+            { id: "acquisitionDate", key: "acquisitionDate", aliases: ["acquisition date", "ngày mua"] },
+            { id: "quantity", key: "quantity", aliases: ["quantity", "số lượng"] },
+            { id: "totalAmount", key: "totalAmount", aliases: ["total amount", "nguyên giá"] },
+            { id: "remainingValue", key: "remainingValue", aliases: ["remaining value", "giá trị còn lại"] },
+            { id: "usingPurpose", key: "usingPurpose", aliases: ["using purpose", "mục đích sử dụng"] },
+            { id: "suppliers", key: "suppliers", aliases: ["suppliers", "nhà cung cấp"] },
+            { id: "status", key: "status", aliases: ["status", "trạng thái"] },
+            { id: "location", key: "location", aliases: ["location", "vị trí"] },
+            { id: "image", key: "image", aliases: ["refer picture", "hình ảnh", "ảnh"] },
+            { id: "assetAttribution", key: "attribution", aliases: ["asset distribution", "phân bổ"] }
         ];
-
         // ===================== INIT =====================
         window.onload = function() {
             renderPage();
@@ -751,28 +747,21 @@
             }
         }
 
-       // TỰ ĐỘNG CHẠY KHI MỞ TRANG
+     // TỰ ĐỘNG CHẠY KHI MỞ TRANG
         (function() {
-            // 1. Điền sẵn link CSV của bạn vào đây
+            // Dán link CSV chuẩn vào đây
             const myFixedUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vScm0cXZzRPu146cINm1PlshNEyrqtVGOALei6xVsPoParmkn6F8fLB3wk3fCSS32FoHvd8GJYLqrDD/pub?output=csv';
             
             const input = document.getElementById('sync-url-input');
-            const savedUrl = localStorage.getItem('syncSheetUrl');
+            input.value = myFixedUrl;
+            localStorage.setItem('syncSheetUrl', myFixedUrl);
 
-            // Ưu tiên dùng link cố định, nếu không có thì dùng link đã lưu
-            if (!savedUrl || savedUrl === '') {
-                input.value = myFixedUrl;
-                localStorage.setItem('syncSheetUrl', myFixedUrl);
-            } else {
-                input.value = savedUrl;
-            }
-
-            // 2. Tự động nhấn nút Sync sau khi trang tải xong 1 giây
+            // Tự động nhấn Sync sau 1 giây
             setTimeout(() => {
                 syncFromSheet(true); 
             }, 1000);
 
-            // Hiển thị trạng thái lần cuối
+            // Hiển thị trạng thái cũ nếu có
             const lastSync = localStorage.getItem('lastSyncTime');
             if (lastSync) {
                 const d = new Date(lastSync);
