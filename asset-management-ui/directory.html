@@ -75,8 +75,9 @@
         <div style="height: 20px;"></div>
 
         <!-- FAB -->
-      <button class="fab main-fab" onclick="window.location.href='add-contact.html'">
-    <i class="ph ph-plus"></i>
+    <button class="fab main-fab" onclick="window.location.href='add-contact.html'" 
+        style="position: fixed; bottom: 100px; right: 24px; z-index: 999; background: #2563EB; color: white; width: 60px; height: 60px; border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+    <i class="ph-bold ph-plus" style="font-size: 28px;"></i>
 </button>
 
         <!-- Bottom Navigation -->
@@ -116,27 +117,26 @@
         if (!localStorage.getItem('contacts')) {
             localStorage.setItem('contacts', JSON.stringify(defaultContacts));
         }
-        function renderContacts() {
-            const contacts = JSON.parse(localStorage.getItem('contacts'));
+       function renderContacts() {
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
             const container = document.getElementById('contacts-container');
             container.innerHTML = '';
             
             contacts.forEach(contact => {
                 const card = document.createElement('div');
                 card.className = 'list-card';
-                card.style.cursor = 'pointer';
+                card.style.padding = '16px'; // Thêm khoảng cách cho đẹp
                 card.onclick = () => window.location.href = `edit-contact.html?id=${contact.id}`;
                 
+                // ĐÃ BỎ THẺ IMG Ở ĐÂY
                 card.innerHTML = `
-                    <img src="${contact.image}" alt="${contact.name}" class="avatar-lg">
                     <div class="list-card-content">
-                        <h3>${contact.name}</h3>
-                        <p>${contact.title}</p>
+                        <h3 style="margin:0; font-size:16px;">${contact.name}</h3>
+                        <p style="margin:4px 0 0; color:#6B7280; font-size:13px;">${contact.title || ''} • ${contact.department || ''}</p>
                     </div>
                     <div class="list-actions">
-                        <button class="btn-circular" onclick="event.stopPropagation(); window.location.href='tel:${contact.phone}'" title="Gọi điện"><i class="ph-fill ph-phone"></i></button>
-                        <button class="btn-circular" onclick="event.stopPropagation(); sendAutoEmail(${contact.id})" title="Gửi mail tự động"><i class="ph-fill ph-paper-plane-tilt"></i></button>
-                        <button class="btn-circular secondary" onclick="event.stopPropagation(); window.location.href='mailto:${contact.email}'" title="Gửi mail"><i class="ph-fill ph-envelope-simple"></i></button>
+                        <button class="btn-circular" onclick="event.stopPropagation(); window.location.href='tel:${contact.phone}'"><i class="ph-fill ph-phone"></i></button>
+                        <button class="btn-circular secondary" onclick="event.stopPropagation(); deleteContact(${contact.id})" style="background:#FEE2E2; color:#EF4444;"><i class="ph-bold ph-trash"></i></button>
                     </div>
                 `;
                 container.appendChild(card);
