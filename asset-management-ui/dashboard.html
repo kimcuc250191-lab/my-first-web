@@ -406,14 +406,15 @@ function renderBarChart() {
             let aobValue = 0, oobValue = 0;
             
             assets.forEach(a => {
-                // Lấy số tiền từ Total Amount (Cột P)
-                const val = parseVNNumber(a.totalAmount || a.remainingValue || 0);
-                // Lấy thông tin phân loại từ cột Asset (Cột I)
-                const assetInfo = (a.asset || '').toUpperCase();
+                // ƯU TIÊN LẤY DỮ LIỆU TỪ CỘT REMAINING VALUE
+                const val = parseVNNumber(a.remainingValue || 0);
+                
+                // PHÂN LOẠI DỰA TRÊN TRƯỜNG ASSET (Cột I)
+                const assetInfo = (a.asset || '').toUpperCase().trim();
                 
                 if (assetInfo.includes('AOB') || assetInfo.includes('ON BOOK')) {
                     aobValue += val;
-                } else if (assetInfo.includes('OFF BOOK') || assetInfo.includes('OOB')) {
+                } else if (assetInfo.includes('OFF BOOK') || assetInfo.includes('OOB') || assetInfo.includes('OUT OF BOOK')) {
                     oobValue += val;
                 }
             });
@@ -425,31 +426,32 @@ function renderBarChart() {
 
             container.innerHTML = `
                 <div style="display:flex; flex-direction:column; gap:24px;">
-                    <div style="padding-bottom:12px; border-bottom:1px dashed #E2E8F0;">
+                    <div style="padding-bottom:12px; border-bottom:1px dashed #E2E8F0; margin-bottom:4px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase;">Combined Total</span>
+                            <span style="font-size:11px; font-weight:700; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px;">Total Remaining Value</span>
                             <span style="font-size:18px; font-weight:800; color:#2563EB;">${fmt.format(aobValue + oobValue)}</span>
                         </div>
                     </div>
                     <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700;">
-                            <span>ASSET ON BOOK</span>
-                            <span>${fmt.format(aobValue)}</span>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
+                            <span>ASSET ON BOOK (AOB)</span>
+                            <span style="color:#111827;">${fmt.format(aobValue)}</span>
                         </div>
                         <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
-                            <div style="width:${aobPct}%; height:100%; background:linear-gradient(90deg, #6366F1, #818CF8);"></div>
+                            <div style="width:${aobPct}%; height:100%; background: linear-gradient(90deg, #6366F1, #818CF8); border-radius:6px;"></div>
                         </div>
                     </div>
                     <div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700;">
-                            <span>ASSET OFF BOOK</span>
-                            <span>${fmt.format(oobValue)}</span>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; font-weight:700; color:#4B5563;">
+                            <span>ASSET OFF BOOK (OOB)</span>
+                            <span style="color:#111827;">${fmt.format(oobValue)}</span>
                         </div>
                         <div style="height:12px; background:#F1F5F9; border-radius:6px; overflow:hidden;">
-                            <div style="width:${oobPct}%; height:100%; background:linear-gradient(90deg, #94A3B8, #CBD5E1);"></div>
+                            <div style="width:${oobPct}%; height:100%; background: linear-gradient(90deg, #94A3B8, #CBD5E1); border-radius:6px;"></div>
                         </div>
                     </div>
-                </div>`;
+                </div>
+            `;
         }
         function renderLineChart() {
             // Placeholder for trend line
