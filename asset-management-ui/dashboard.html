@@ -405,12 +405,21 @@
             if (!container) return;
             let aobValue = 0, oobValue = 0;
             
-            assets.forEach(a => {
-                const val = parseVNNumber(a.remainingValue || a.totalAmount || 0);
-                const attr = (a.attribution || '').toUpperCase();
+           assets.forEach(a => {
+                // Lấy giá trị tiền (Ưu tiên cột Total Amount - Cột P)
+                const val = parseVNNumber(a.totalAmount || a.remainingValue || 0);
                 
-                if (attr.includes('AOB') || attr.includes('ON BOOK')) aobValue += val;
-                else if (attr.includes('OOB') || attr.includes('OUT OF BOOK') || attr.includes('OFF BOOK')) oobValue += val;
+                // Lấy dữ liệu từ trường asset (Cột I) và chuẩn hóa
+                const assetData = (a.asset || '').toUpperCase().trim();
+                
+                // Kiểm tra điều kiện chính xác hơn
+                if (assetData.includes('AOB') || assetData.includes('ON BOOK')) {
+                    aobValue += val;
+                } 
+                // Thêm 'OFF BOOK' và kiểm tra kỹ chữ OOB
+                else if (assetData.includes('OOB') || assetData.includes('OFF BOOK') || assetData.includes('OUT OF BOOK')) {
+                    oobValue += val;
+                }
             });
 
             const max = Math.max(aobValue, oobValue, 1);
